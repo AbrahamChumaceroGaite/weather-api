@@ -7,6 +7,4 @@ services:
       DEBUG: nodejs-docker-express:*
     ports:
       - "8080:80"
-    volumes:
-      - assets:/app/assets  
     restart: always  
