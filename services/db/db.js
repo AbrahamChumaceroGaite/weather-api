@@ -8,7 +8,8 @@ const mysql = require("mysql2");
 }); */
 
 const connection = mysql.createConnection({
-  host: 'clnymjgu300s6pmcgihpxraxv',
+  host: '181.188.156.195',
+  port: '18001',
   user: 'clnymjgu10hh3cgpm7yie35j8',
   password: 'xw8LqMzkm7ZCE0QFOOk80WqJ',
   database: 'monitor'

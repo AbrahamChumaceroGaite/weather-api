@@ -1,0 +1,20 @@
+module.exports = {
+    // Genericos
+    successPost: 'Registro guardado correctamente',  
+    successPut: 'Registro actualizado correctamente',
+    successDelete: 'Registro eliminado correctamente',
+    errorQuery: 'Error en la consulta',
+    notFound: 'No se encontraron registros',
+    duplicatedCI: 'Este CI ya existe',
+    duplicatedCommunity: 'Esta comunidad ya existe',
+    duplicatedDepartment: 'Esta departamento ya existe',
+    duplicatedDeviceClient: 'Este usuario ya tiene asignado este dispositivo',
+    duplicatedLocation: 'Esta ubicación ya existe',
+    duplicatedMunicipality: 'Este municipio ya existe',
+    duplicatedProvince: 'Esta provincia ya existe',
+    duplicatedRole: 'Este rol ya existe',
+    duplicatedUser: 'Este usuario ya existe',
+    loginFailed: 'Contraseña incorrecta',
+    loginError: 'Error al iniciar sesión',
+    loginNoUser: 'Usuario no encontrado',
+  };
