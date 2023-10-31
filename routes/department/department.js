@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const { queryDatabase } = require("../../services/db/query");
-const msj = require("../../utils/messages");
-const { getDepartments, getDepartmentById, postDepartment, checkExistingDepartment, checkExistingDepartmentUpdate, updateDepartment, deleteDepartment } = require("./query");
+const msj = require("../../templates/messages");
+const { getDepartments, getDepartmentById, getLazy, getTotalRecords, getTotalUsers, postDepartment, checkExistingDepartment, checkExistingDepartmentUpdate, updateDepartment, deleteDepartment } = require("./query");
 
 router.get("/get", async (req, res) => {
   try {
@@ -15,6 +15,39 @@ router.get("/get", async (req, res) => {
       res.send(departments);
     }
   } catch (err) {
+    res.status(500).send({ message: msj.errorQuery });
+  }
+});
+
+router.get("/getLazy", async (req, res) => {
+  const { id, first, rows, globalFilter, sortField, sortOrder } = req.query;
+  console.log(req.query)
+  const startIndex = parseInt(first);
+  const numRows = parseInt(rows);
+
+  try {
+    // Demoprahic query
+    const demoprahQuery = await getLazy(id, startIndex, numRows, globalFilter, sortField, sortOrder);
+    const demograph = await queryDatabase(demoprahQuery);
+    // Total records query
+    const { queryTR, valuesTR } = await getTotalRecords(id);
+    const totalR = await queryDatabase(queryTR, valuesTR);
+    
+    // Total users query
+    const { queryTU, valuesTU } = await getTotalUsers(id);
+    const totalU = await queryDatabase(queryTU, valuesTU);
+
+    // Total records and total users
+    const totalRE = totalR[0].totalRecords;
+    const totalUS = totalU[0].totalUsers;
+
+    if (totalRE.length === 0) {
+      res.status(404).send({ message: msj.emptyQuery });
+    } else {
+      res.send({ items: demograph, totalRecords: totalRE, totalUsers: totalUS });
+    }
+  } catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
 });

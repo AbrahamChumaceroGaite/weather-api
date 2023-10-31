@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { queryDatabase } = require("../../services/db/query");
-const msj = require("../../utils/messages");
+const msj = require("../../templates/messages");
 const { getMunicipalities, getMunicipalityById, insertMunicipality, checkDuplicateMunicipality, updateMunicipality, deleteMunicipality} = require("./query");
 
 router.get("/get", async (req, res) => {

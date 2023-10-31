@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const msj = require("../../utils/messages");
+const msj = require("../../templates/messages");
 const { queryDatabase } = require("../../services/db/query");
 const { getRoles, postRole, updateRole, deleteRole, checkDuplicateRole } = require("./query");
 

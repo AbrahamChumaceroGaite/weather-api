@@ -3,7 +3,7 @@ const router = express.Router();
 const bcrypt = require("bcrypt");
 const { getClients, getClientById, postClient, checkExistingClient, updateClient, deleteClient } = require("./query");
 const { queryDatabase } = require("../../services/db/query");
-const msj = require("../../utils/messages");
+const msj = require("../../templates/messages");
 
 router.get("/get", async (req, res) => {
   try {

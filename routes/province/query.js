@@ -7,6 +7,27 @@ function getProvinces() {
     `;
 }
 
+function getTotalRecords() {
+  return `SELECT COUNT(*) as totalRecords FROM province WHERE deleted = 0`;
+}
+
+function getLazy(startIndex, numRows, globalFilter, sortField, sortOrder) {
+  let query = `SELECT d.name as "department", p.id, p.name, p.createdAt
+  FROM province p
+  JOIN department d on p.iddepartment = d.id
+  WHERE p.deleted = 0`;
+
+  if (globalFilter) {
+    query += ` AND p.name LIKE '%${globalFilter}%'`;
+  }
+
+  if (sortField && sortOrder) {
+    query += ` ORDER BY ${sortField} ${sortOrder === '1' ? 'ASC' : 'DESC'}`;
+  }
+
+  return query;
+}
+
 function getProvinceById(id) {
   return {
     query: `SELECT * FROM province WHERE id = ?`,
@@ -72,6 +93,8 @@ function deleteProvince(id) {
 module.exports = {
   getProvinces,
   getProvinceById,
+  getLazy,
+  getTotalRecords,
   checkDuplicateProvince,
   insertProvince,
   updateProvince,

@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const { queryDatabase } = require("../../services/db/query");
-const msj = require("../../utils/messages");
-const { getLocations, getLocationById, insertLocation, updateLocation, checkDuplicateLocation, deleteLocation } = require("./query");
+const msj = require("../../templates/messages");
+const { getLocations, getLocationById, getLazy, getTotalRecords, insertLocation, updateLocation, checkDuplicateLocation, deleteLocation } = require("./query");
 
 router.get("/get", async (req, res) => {
   try {
@@ -11,6 +11,29 @@ router.get("/get", async (req, res) => {
 
     res.send(results);
   } catch (err) {
+    res.status(500).send({ message: msj.errorQuery });
+  }
+});
+
+router.get("/getLazy", async (req, res) => {
+  const { id, first, rows, globalFilter, sortField, sortOrder } = req.query;
+  console.log(req.query)
+  const startIndex = parseInt(first);
+  const numRows = parseInt(rows);
+  try {
+    const communitiesQuery = await getLazy(id, startIndex, numRows, globalFilter, sortField, sortOrder);
+    const communities = await queryDatabase(communitiesQuery);
+    const { query, values } = await getTotalRecords(id);
+    const totalR = await queryDatabase(query, values);
+    const total = totalR[0].totalRecords;
+
+    if (total.length === 0) {
+      res.status(404).send({ message: msj.emptyQuery });
+    } else {
+      res.send({ items: communities, totalRecords: total });
+    }
+  } catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
 });

@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const verifyToken = require('../../middleware/middleware');
 const { queryDatabase } = require("../../services/db/query");
-const msj = require("../../utils/messages");
+const msj = require("../../templates/messages");
 const { getDevices, getDeviceList, getDeviceListById, insertDeviceData, deleteDevice } = require("./query-device");
 const { getAllDeviceIdentities, getDeviceIdentityById, getUnusedDeviceIdentities, insertDeviceIdentity, updateDeviceIdentity, deleteDeviceIdentity } = require("./query-identity");
 

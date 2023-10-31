@@ -9,6 +9,31 @@ function getCommunities() {
     `;
 }
 
+function getTotalRecords() {
+    return `SELECT COUNT(*) as totalRecords FROM community WHERE deleted = 0`;
+}
+
+function getLazy(startIndex, numRows, globalFilter, sortField, sortOrder) {
+    let query = `SELECT c.id, p.name as "province", m.name as "municipality", c.name, c.createdAt, c.createdUpd
+    FROM community c
+    JOIN municipality m ON c.idmunicipality = m.id
+    JOIN province p ON m.idprovince = p.id
+    JOIN department d ON p.iddepartment = d.id
+    WHERE c.deleted = 0`;
+
+    if (globalFilter) {
+        query += ` AND (d.name LIKE '%${globalFilter}%' OR p.name LIKE '%${globalFilter}%' OR m.name LIKE '%${globalFilter}%' OR c.name LIKE '%${globalFilter}%)`;
+    }
+
+    if (sortField && sortOrder) {
+        query += ` ORDER BY ${sortField} ${sortOrder === '1' ? 'ASC' : 'DESC'}`;
+    }
+
+    query += ` LIMIT ${startIndex}, ${numRows}`;
+
+    return query;
+}
+
 function getCommunityById(id) {
     return {
         query: "SELECT * FROM community WHERE id = ?",
@@ -71,6 +96,8 @@ function deleteCommunity(id) {
 module.exports = {
     getCommunities,
     getCommunityById,
+    getLazy,
+    getTotalRecords,
     postCommunity,
     checkExistingCommunity,
     checkExistingCommunityUpdate,

@@ -6,7 +6,7 @@ function verifyToken(req, res, next) {
   if (authHeader  && authHeader .startsWith('Bearer ')) {
     
     const token = authHeader.replace('Bearer ', '');
-    jwt.verify(token, 'secreto', (err, decoded) => {
+    jwt.verify(token, 'Omp4Bko8zb', (err, decoded) => {
       if (err) {
         res.status(403).json({ error: 'Token inválido' });
       } else {

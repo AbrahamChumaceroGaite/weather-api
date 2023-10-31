@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const { queryDatabase } = require("../../services/db/query");
-const msj = require("../../utils/messages");
-const { getProvinces, getProvinceById, insertProvince, checkDuplicateProvince, updateProvince, deleteProvince} = require("./query");
+const msj = require("../../templates/messages");
+const { getProvinces, getProvinceById, getLazy, getTotalRecords, insertProvince, checkDuplicateProvince, updateProvince, deleteProvince} = require("./query");
 
 router.get("/get", async (req, res) => {
   try {
@@ -12,6 +12,27 @@ router.get("/get", async (req, res) => {
       res.send(results);
     } else {
       res.status(404).send({ message: msj.notFound });
+    }
+  } catch (err) {
+    res.status(500).send({ message: msj.errorQuery });
+  }
+});
+
+router.get("/getLazy", async (req, res) => {
+  const { first, rows, globalFilter, sortField, sortOrder } = req.query;
+  console.log(req.query)
+  const startIndex = parseInt(first);
+  const numRows = parseInt(rows);
+  try {
+    const communitiesQuery = await getLazy(startIndex, numRows, globalFilter, sortField, sortOrder);
+    const communities = await queryDatabase(communitiesQuery);
+    const totalR= await queryDatabase(getTotalRecords());
+    const total = totalR[0].totalRecords;
+
+    if (total.length === 0) {      
+      res.status(404).send({ message: msj.emptyQuery });
+    } else {
+      res.send({items: communities, totalRecords: total});
     }
   } catch (err) {
     res.status(500).send({ message: msj.errorQuery });
@@ -73,7 +94,6 @@ router.put("/update/:id", async (req, res) => {
     res.status(500).send({ message: msj.errorQuery });
   }
 });
-
 
 router.delete("/delete/:id", async (req, res) => {
   const id = req.params.id;

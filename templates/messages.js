@@ -4,6 +4,7 @@ module.exports = {
     successPut: 'Registro actualizado correctamente',
     successDelete: 'Registro eliminado correctamente',
     errorQuery: 'Error en la consulta',
+    emptyQuery: 'La tabla está vacía',
     notFound: 'No se encontraron registros',
     duplicatedCI: 'Este CI ya existe',
     duplicatedCommunity: 'Esta comunidad ya existe',

@@ -17,6 +17,47 @@ function getLocations() {
     `;
 }
 
+function getTotalRecords(id) {
+    return {
+        query: `SELECT COUNT(*) as totalRecords FROM location l
+        JOIN community c on l.idcommunity = c.id
+        JOIN municipality m on c.idmunicipality = m.id
+        JOIN province p on m.idprovince = p.id
+        JOIN department d on p.iddepartment = d.id
+        WHERE d.id = ? AND c.deleted = 0`,
+        values: [id],
+    }
+}
+
+function getLazy(id, startIndex, numRows, globalFilter, sortField, sortOrder) {
+    let query = ` SELECT
+    l.id,
+    d.name as "department",
+    p.name as "province",
+    m.name as "municipality",
+    c.name as "community",
+    l.name,
+    l.createdAt
+  FROM location l
+  JOIN community c on l.idcommunity = c.id
+  JOIN municipality m on c.idmunicipality = m.id
+  JOIN province p on m.idprovince = p.id
+  JOIN department d on p.iddepartment = d.id
+  WHERE d.id= ${id} AND c.deleted = 0`;
+
+    if (globalFilter) {
+        query += ` AND (d.name LIKE '%${globalFilter}%' OR p.name LIKE '%${globalFilter}%' OR m.name LIKE '%${globalFilter}%' OR c.name LIKE '%${globalFilter}% OR l.name LIKE '%${globalFilter}%)`;
+    }
+
+    if (sortField && sortOrder) {
+        query += ` ORDER BY ${sortField} ${sortOrder === '1' ? 'ASC' : 'DESC'}`;
+    }
+
+    query += ` LIMIT ${startIndex}, ${numRows}`;
+
+    return query;
+}
+
 function getLocationById(id) {
     return {
         query: `
@@ -87,6 +128,8 @@ function deleteLocation(id) {
 module.exports = {
     getLocations,
     getLocationById,
+    getLazy,
+    getTotalRecords,
     insertLocation,
     updateLocation,
     checkDuplicateLocation,

@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { queryDatabase } = require("../../services/db/query");
-const msj = require("../../utils/messages");
+const msj = require("../../templates/messages");
 const { getActiveDeviceClients, getDeviceClientById, checkDuplicateDeviceClient, insertDeviceClient, updateDeviceClient, deleteDeviceClient } = require("./query");
 
 router.get("/get", async (req, res) => {
