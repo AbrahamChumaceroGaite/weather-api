@@ -34,7 +34,7 @@ function getLazy(id, startIndex, numRows, globalFilter, sortField, sortOrder) {
     LEFT JOIN municipality m ON p.id = m.idprovince
     LEFT JOIN community c ON m.id = c.idmunicipality
     LEFT JOIN location l ON c.id = l.idcommunity
-    WHERE d.id = ${id} AND d.deleted = 0`;
+    WHERE d.id = ${id} AND d.deleted <>1 AND l.deleted <>1 AND c.deleted <>1 AND m.deleted <>1 AND p.deleted <>1 `;
 
     if (globalFilter) {
         query += ` AND (d.name LIKE '%${globalFilter}%' OR p.name LIKE '%${globalFilter}%' OR m.name LIKE '%${globalFilter}%' OR c.name LIKE '%${globalFilter}%' OR l.name LIKE '%${globalFilter}%')`;
@@ -58,7 +58,7 @@ function getDepartmentById(id) {
 
 function postDepartment(name) {
     return {
-        query: "INSERT INTO department (name, deleted) VALUES (?, 0)",
+        query: "INSERT INTO department (name) VALUES (?)",
         value: [name],
     };
 }

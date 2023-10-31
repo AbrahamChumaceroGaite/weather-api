@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { queryDatabase } = require("../../services/db/query");
 const msj = require("../../templates/messages");
-const { getProvinces, getProvinceById, getLazy, getTotalRecords, insertProvince, checkDuplicateProvince, updateProvince, deleteProvince} = require("./query");
+const { getProvinces, getProvinceById, getByDept, getLazy, getTotalRecords, insertProvince, checkDuplicateProvince, updateProvince, deleteProvince } = require("./query");
 
 router.get("/get", async (req, res) => {
   try {
@@ -19,20 +19,19 @@ router.get("/get", async (req, res) => {
 });
 
 router.get("/getLazy", async (req, res) => {
-  const { first, rows, globalFilter, sortField, sortOrder } = req.query;
-  console.log(req.query)
+  const { id, first, rows, globalFilter, sortField, sortOrder } = req.query;
   const startIndex = parseInt(first);
   const numRows = parseInt(rows);
   try {
-    const communitiesQuery = await getLazy(startIndex, numRows, globalFilter, sortField, sortOrder);
+    const communitiesQuery = await getLazy(id, startIndex, numRows, globalFilter, sortField, sortOrder);
     const communities = await queryDatabase(communitiesQuery);
-    const totalR= await queryDatabase(getTotalRecords());
+    const totalR = await queryDatabase(getTotalRecords(id));
     const total = totalR[0].totalRecords;
 
-    if (total.length === 0) {      
+    if (total.length === 0) {
       res.status(404).send({ message: msj.emptyQuery });
     } else {
-      res.send({items: communities, totalRecords: total});
+      res.send({ items: communities, totalRecords: total });
     }
   } catch (err) {
     res.status(500).send({ message: msj.errorQuery });
@@ -41,9 +40,23 @@ router.get("/getLazy", async (req, res) => {
 
 router.get("/getById/:id", async (req, res) => {
   const id = req.params.id;
-
   try {
     const providenceQuery = getProvinceById(id);
+    const results = await queryDatabase(providenceQuery.query, providenceQuery.values);
+    if (results.length > 0) {
+      res.send(results);
+    } else {
+      res.status(404).send({ message: msj.notFound });
+    }
+  } catch (err) {
+    res.status(500).send({ message: msj.errorQuery });
+  }
+});
+
+router.get("/getByDept/:id", async (req, res) => {
+  const id = req.params.id;
+  try {
+    const providenceQuery = await getByDept(id);
     const results = await queryDatabase(providenceQuery.query, providenceQuery.values);
     if (results.length > 0) {
       res.send(results);
@@ -79,7 +92,7 @@ router.put("/update/:id", async (req, res) => {
   const { name, iddepartment } = req.body;
 
   try {
-    const duplicateCheckQuery = checkDuplicateProvince(name, iddepartment, id);
+    const duplicateCheckQuery = await checkDuplicateProvince(name, iddepartment, id);
     const duplicateCheckResult = await queryDatabase(duplicateCheckQuery.query, duplicateCheckQuery.values);
 
     if (duplicateCheckResult.length > 0) {
@@ -91,6 +104,7 @@ router.put("/update/:id", async (req, res) => {
     const results = await queryDatabase(updateQuery.query, updateQuery.values);
     res.send(results);
   } catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
 });

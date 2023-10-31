@@ -4,7 +4,7 @@ function getRoles() {
 
 function postRole(rol) {
     return {
-        query: "INSERT INTO rol (rol, deleted) VALUES (?, 0)",
+        query: "INSERT INTO rol (rol) VALUES (?)",
         values: [rol]
     };
 }

@@ -21,7 +21,6 @@ router.get("/get", async (req, res) => {
 
 router.get("/getLazy", async (req, res) => {
   const { id, first, rows, globalFilter, sortField, sortOrder } = req.query;
-  console.log(req.query)
   const startIndex = parseInt(first);
   const numRows = parseInt(rows);
 

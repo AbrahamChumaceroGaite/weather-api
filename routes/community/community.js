@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { queryDatabase } = require("../../services/db/query");
 const msj = require("../../templates/messages");
-const { getCommunities, getCommunityById, getLazy, getTotalRecords, postCommunity, checkExistingCommunity, checkExistingCommunityUpdate, updateCommunity, deleteCommunity } = require("./query");
+const { getCommunities, getCommunityById, getLazy, getByDept, getTotalRecords, postCommunity, checkExistingCommunity, checkExistingCommunityUpdate, updateCommunity, deleteCommunity } = require("./query");
 
 router.get("/get", async (req, res) => {
   try {
@@ -20,21 +20,22 @@ router.get("/get", async (req, res) => {
 });
 
 router.get("/getLazy", async (req, res) => {
-  const { first, rows, globalFilter, sortField, sortOrder } = req.query;
+  const { id, first, rows, globalFilter, sortField, sortOrder } = req.query;
   const startIndex = parseInt(first);
   const numRows = parseInt(rows);
   try {
-    const communitiesQuery = await getLazy(startIndex, numRows, globalFilter, sortField, sortOrder);
+    const communitiesQuery = await getLazy(id, startIndex, numRows, globalFilter, sortField, sortOrder);
     const communities = await queryDatabase(communitiesQuery);
-    const totalR= await queryDatabase(getTotalRecords());
+    const totalR = await queryDatabase(getTotalRecords(id));
     const total = totalR[0].totalRecords;
 
-    if (total.length === 0) {      
+    if (total.length === 0) {
       res.status(404).send({ message: msj.emptyQuery });
     } else {
-      res.send({items: communities, totalRecords: total});
+      res.send({ items: communities, totalRecords: total });
     }
   } catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
 });
@@ -56,14 +57,30 @@ router.get("/getById/:id", async (req, res) => {
   }
 });
 
+router.get("/getByDept/:id", async (req, res) => {
+  const id = req.params.id;
+  try {
+    const providenceQuery = await getByDept(id);
+    const results = await queryDatabase(providenceQuery.query, providenceQuery.values);
+    if (results.length > 0) {
+      res.send(results);
+    } else {
+      res.status(404).send({ message: msj.notFound });
+    }
+  } catch (err) {
+    console.log(err)
+    res.status(500).send({ message: msj.errorQuery });
+  }
+});
+
 router.post("/post", async (req, res) => {
-  const name = req.body.name;
-  const idmunicipality = req.body.idmunicipality;
+  const {name, idmunicipality} = req.body;
 
   try {
     // Verificar si la comunidad ya existe en la base de datos
-    const existingCommunities = await queryDatabase(checkExistingCommunity(name, idmunicipality));
-
+    const {query, value} = checkExistingCommunity(name, idmunicipality);
+    const existingCommunities = await queryDatabase(query, value);
+  
     if (existingCommunities.length > 0) {
       res.status(400).send({ message: msj.duplicatedCommunity });
     } else {
@@ -77,18 +94,19 @@ router.post("/post", async (req, res) => {
       }
     }
   } catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
 });
 
 router.put("/update/:id", async (req, res) => {
   const id = req.params.id;
-  const name = req.body.name;
-  const idmunicipality = req.body.idmunicipality;
+  const {name, idmunicipality} = req.body;
 
   try {
     // Verificar si la comunidad ya existe en la base de datos
-    const existingCommunities = await queryDatabase(checkExistingCommunityUpdate(name, idmunicipality));
+    const {query, values} = checkExistingCommunityUpdate(name, idmunicipality, id);
+    const existingCommunities = await queryDatabase(query, values);
 
     if (existingCommunities.length > 0) {
       res.status(400).send({ message: msj.duplicatedCommunity });

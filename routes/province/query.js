@@ -1,29 +1,39 @@
 function getProvinces() {
   return `
-      SELECT d.name as "department", p.id, p.name, p.createdAt
-      FROM province p
-      JOIN department d on p.iddepartment = d.id
-      WHERE p.deleted = 0
+      SELECT p.* FROM province p WHERE p.deleted = 0
     `;
 }
 
-function getTotalRecords() {
-  return `SELECT COUNT(*) as totalRecords FROM province WHERE deleted = 0`;
+function getByDept(id) {
+  return {
+    query: `SELECT p.* FROM province p
+    JOIN department d on p.iddepartment = d.id
+    WHERE d.id = ? AND p.deleted = 0`,
+    values: [id]
+  };
 }
 
-function getLazy(startIndex, numRows, globalFilter, sortField, sortOrder) {
-  let query = `SELECT d.name as "department", p.id, p.name, p.createdAt
+function getTotalRecords(id) {
+  return `SELECT COUNT(*) as totalRecords FROM province p
+  JOIN department d on p.iddepartment = d.id
+  WHERE d.id = ${id} AND p.deleted = 0`;
+}
+
+function getLazy(id, startIndex, numRows, globalFilter, sortField, sortOrder) {
+  let query = `SELECT d.name as "department", p.id, p.name, p.createdAt, p.createdUpd
   FROM province p
   JOIN department d on p.iddepartment = d.id
-  WHERE p.deleted = 0`;
+  WHERE d.id = ${id} AND p.deleted = 0`;
 
   if (globalFilter) {
-    query += ` AND p.name LIKE '%${globalFilter}%'`;
+    query += ` AND (d.name LIKE '%${globalFilter}%' OR p.name LIKE '%${globalFilter}%')`;
   }
 
   if (sortField && sortOrder) {
     query += ` ORDER BY ${sortField} ${sortOrder === '1' ? 'ASC' : 'DESC'}`;
   }
+
+  query += ` LIMIT ${startIndex}, ${numRows}`;
 
   return query;
 }
@@ -57,10 +67,9 @@ function insertProvince(iddepartment, name) {
   };
 }
 
-function updateProvince(id, updates) {
-  const { name, iddepartment } = updates;
+function updateProvince(id, name, iddepartment) {
   const values = [];
-  let query = "UPDATE province SET";
+  let query = "UPDATE province SET ";
 
   if (name) {
     query += ` name = ?,`;
@@ -94,6 +103,7 @@ module.exports = {
   getProvinces,
   getProvinceById,
   getLazy,
+  getByDept,
   getTotalRecords,
   checkDuplicateProvince,
   insertProvince,

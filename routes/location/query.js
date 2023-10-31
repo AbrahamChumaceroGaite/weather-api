@@ -37,17 +37,17 @@ function getLazy(id, startIndex, numRows, globalFilter, sortField, sortOrder) {
     m.name as "municipality",
     c.name as "community",
     l.name,
-    l.createdAt
+    l.createdAt,
+    l.createdUpd
   FROM location l
   JOIN community c on l.idcommunity = c.id
   JOIN municipality m on c.idmunicipality = m.id
   JOIN province p on m.idprovince = p.id
   JOIN department d on p.iddepartment = d.id
-  WHERE d.id= ${id} AND c.deleted = 0`;
+  WHERE d.id = ${id} AND l.deleted = 0`;
 
     if (globalFilter) {
-        query += ` AND (d.name LIKE '%${globalFilter}%' OR p.name LIKE '%${globalFilter}%' OR m.name LIKE '%${globalFilter}%' OR c.name LIKE '%${globalFilter}% OR l.name LIKE '%${globalFilter}%)`;
-    }
+        query += ` AND (d.name LIKE '%${globalFilter}%' OR p.name LIKE '%${globalFilter}%' OR m.name LIKE '%${globalFilter}%' OR c.name LIKE '%${globalFilter}%' OR l.name LIKE '%${globalFilter}%')`;  }
 
     if (sortField && sortOrder) {
         query += ` ORDER BY ${sortField} ${sortOrder === '1' ? 'ASC' : 'DESC'}`;

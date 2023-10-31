@@ -9,20 +9,35 @@ function getCommunities() {
     `;
 }
 
-function getTotalRecords() {
-    return `SELECT COUNT(*) as totalRecords FROM community WHERE deleted = 0`;
+function getByDept(id) {
+    return {
+      query: `SELECT c.* FROM community c
+      JOIN municipality m ON c.idmunicipality = m.id
+      JOIN province p ON m.idprovince = p.id
+      JOIN department d ON p.iddepartment = d.id
+      WHERE d.id = ? AND c.deleted = 0`,
+      values: [id]
+    };
+  }
+
+function getTotalRecords(id) {
+    return `SELECT COUNT(*) as totalRecords FROM community c
+    JOIN municipality m ON c.idmunicipality = m.id
+    JOIN province p ON m.idprovince = p.id
+    JOIN department d ON p.iddepartment = d.id
+    WHERE d.id = ${id} AND c.deleted = 0`;
 }
 
-function getLazy(startIndex, numRows, globalFilter, sortField, sortOrder) {
+function getLazy(id, startIndex, numRows, globalFilter, sortField, sortOrder) {
     let query = `SELECT c.id, p.name as "province", m.name as "municipality", c.name, c.createdAt, c.createdUpd
     FROM community c
     JOIN municipality m ON c.idmunicipality = m.id
     JOIN province p ON m.idprovince = p.id
     JOIN department d ON p.iddepartment = d.id
-    WHERE c.deleted = 0`;
+    WHERE d.id = ${id} AND c.deleted = 0`;
 
     if (globalFilter) {
-        query += ` AND (d.name LIKE '%${globalFilter}%' OR p.name LIKE '%${globalFilter}%' OR m.name LIKE '%${globalFilter}%' OR c.name LIKE '%${globalFilter}%)`;
+        query += ` AND (d.name LIKE '%${globalFilter}%' OR p.name LIKE '%${globalFilter}%' OR m.name LIKE '%${globalFilter}%' OR c.name LIKE '%${globalFilter}%')`;
     }
 
     if (sortField && sortOrder) {
@@ -43,23 +58,31 @@ function getCommunityById(id) {
 
 function postCommunity(name, idmunicipality) {
     return {
-        query: "INSERT INTO community (idmunicipality, name, deleted) VALUES (?, ?, 0)",
+        query: "INSERT INTO community (idmunicipality, name) VALUES (?, ?)",
         value: [idmunicipality, name],
     };
 }
 
 function checkExistingCommunity(name, idmunicipality) {
     return {
-        query: "SELECT * FROM community WHERE name = ? AND idmunicipality = ? AND deleted = 0",
+        query: "SELECT COUNT(*) FROM community WHERE name = ? AND idmunicipality = ? AND deleted = 0",
         value: [name, idmunicipality],
     };
 }
 
-function checkExistingCommunityUpdate(name, idmunicipality) {
-    return {
-        query: "SELECT * FROM client WHERE name = ? AND idmunicipality <> ?",
-        values: [name, idmunicipality]
+function checkExistingCommunityUpdate(name, idmunicipality, id = null) {
+    let query = "SELECT * FROM community WHERE name = ? AND idmunicipality = ?";
+    const values = [name, idmunicipality];
+
+    if (id !== null) {
+        query += " AND id <> ?";
+        values.push(id);
     }
+
+    return {
+        query,
+        values,
+    };
 }
 
 function updateCommunity(id, name, idmunicipality) {
@@ -96,6 +119,7 @@ function deleteCommunity(id) {
 module.exports = {
     getCommunities,
     getCommunityById,
+    getByDept,
     getLazy,
     getTotalRecords,
     postCommunity,
