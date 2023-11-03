@@ -15,6 +15,7 @@ module.exports = {
     duplicatedProvince: 'Esta provincia ya existe',
     duplicatedRole: 'Este rol ya existe',
     duplicatedUser: 'Este usuario ya existe',
+    duplicatedPerson: 'Ya existe una persona con el mismo Correo, CI o Teléfono',
     loginFailed: 'Contraseña incorrecta',
     loginError: 'Error al iniciar sesión',
     loginNoUser: 'Usuario no encontrado',

@@ -1,106 +1,201 @@
 const express = require("express");
 const router = express.Router();
+const msj = require("../../templates/messages");
 const bcrypt = require("bcrypt");
-const { queryDatabase } = require("../../services/db/query");
-const { getUsers, postUser, updateUser, deleteUser, checkDuplicateUser } = require("./query");
+const { connectionPromise } = require("../../services/db/db")
+const { queryDatabase, queryDatabasePromise } = require("../../services/db/query");
+const { getUsers, getLazy, getTotalRecords, insertUser, insertUserRol, updateUser, deleteUser, checkDuplicateUser, checkDuplicateUserRol, checkDuplicateUserRolUpdate, checkDuplicateUserUpdate, getUserById, updateUserRol } = require("./query");
 
-router.get("/get", (req, res) => {
-  queryDatabase(getUsers())
-    .then((results) => {
-      res.send(results);
-    })
-    .catch((err) => {
-      res.status(500).send({ message: errorQuery });
-    });
+router.get("/get", async (req, res) => {
+  try {
+    const results = await queryDatabase(getUsers())
+    res.send(results);
+  } catch (err) {
+    res.status(500).send({ message: msj.errorQuery });
+  }
 });
 
-// Endpoint para obtener un usuario por ID
-router.get("/getById/:id", (req, res) => {
+router.get("/getLazy", async (req, res) => {
+  const { id, first, rows, globalFilter, sortField, sortOrder } = req.query;
+  const startIndex = parseInt(first);
+  const numRows = parseInt(rows);
+  try {
+    const personQuery = await getLazy(id, startIndex, numRows, globalFilter, sortField, sortOrder);
+    const persons = await queryDatabase(personQuery);
+    const totalR = await queryDatabase(getTotalRecords(id))
+    const total = totalR[0].totalRecords;
+
+    if (total.length === 0) {
+      res.status(404).send({ message: msj.emptyQuery });
+    } else {
+      res.send({ items: persons, totalRecords: total });
+    }
+  } catch (err) {
+    res.status(500).send({ message: msj.errorQuery });
+  }
+});
+
+router.get("/getById/:id", async (req, res) => {
   const id = req.params.id;
-  queryDatabase(getUserById(id))
-    .then((results) => {
-      res.send(results);
-    })
-    .catch((err) => {
-      res.status(500).send({ message: errorQuery });
-    });
+  console.log(id)
+  try {
+    const results = await queryDatabase(getUserById(id))
+    console.log(results)
+    res.send(results);
+  } catch (err) {
+    res.status(500).send({ message: msj.errorQuery });
+  }
 });
 
-router.post("/post", (req, res) => {
-  const { name, email, idrol, pass } = req.body;
-  // Generar un salt para encriptar la contraseña
-  const salt = bcrypt.genSaltSync(10);
-  // Encriptar la contraseña con el salt
-  const hashedPassword = bcrypt.hashSync(pass, salt);
+router.post("/post", async (req, res) => {
+  const { idperson, idrol, pass } = req.body;
+  let connection;
+  try {
+    connection = await connectionPromise;
+    await connection.beginTransaction();
 
-  queryDatabase(checkDuplicateUser(email, 0))
-    .then((duplicates) => {
-      if (duplicates.length > 0) {
-        res.status(400).send({ message: duplicatedUser });
+    const duplicateCheckQuery = await checkDuplicateUser(idperson);
+    const duplicateCheckResult = await queryDatabasePromise(connection, duplicateCheckQuery.query, duplicateCheckQuery.values);
+
+    if (duplicateCheckResult.length > 0) {
+      res.status(400).send({ message: msj.duplicatedUser });
+    } else {
+      const insertQuery = insertUser(idperson);
+      const result = await queryDatabasePromise(connection, insertQuery.query, insertQuery.values);
+      const userId = result.insertId;
+
+      await connection.commit(); // Confirmar la transacción para insertar el usuario
+
+      connection.beginTransaction(); // Iniciar una nueva transacción
+
+      const duplicateCheckRolQuery = await checkDuplicateUserRol(userId, idrol);
+      const duplicateCheckRolResult = await queryDatabasePromise(connection, duplicateCheckRolQuery.query, duplicateCheckRolQuery.values);
+
+      if (duplicateCheckRolResult.length > 0) {
+        res.status(400).send({ message: msj.duplicatedUser });
       } else {
-        const { query, values } = postUser(name, email, idrol, hashedPassword);
-
-        queryDatabase(query, values)
-          .then((results) => {
-            res.status(201).send({ message: successPost, user: { id: results.insertId, name, email, idrol } });
-          })
-          .catch((err) => {
-            res.status(500).send({ message: errorQuery });
-          });
+        const hashedPassword = bcrypt.hashSync(pass, 10);
+        const insertRolQuery = await insertUserRol(userId, idrol, hashedPassword);
+        await queryDatabasePromise(connection, insertRolQuery.query, insertRolQuery.values);
+        await connection.commit(); // Confirmar la transacción para insertar el rol del usuario
+        res.status(200).send({ message: msj.successPost });
       }
-    })
-    .catch((err) => {
-      res.status(500).send({ message: errorQuery });
-    });
+    }
+  } catch (err) {
+    if (connection) {
+      await connection.rollback(); // Revertir la transacción en caso de error
+      res.status(500).send({ message: msj.errorQuery });
+    }
+    res.status(500).send({ message: msj.errorQuery });
+  }
 });
 
-router.put("/update/:id", (req, res) => {
-  const { name, email, idrol, pass } = req.body;
+router.put("/post", async (req, res) => {
+  const id = req.params.id;
+  const { idperson, idrol, pass } = req.body;
+  let connection;
+  try {
+    connection = await connectionPromise;
+    await connection.beginTransaction();
+
+    const duplicateCheckQuery = await checkDuplicateUserUpdate(idperson, id);
+    const duplicateCheckResult = await queryDatabasePromise(connection, duplicateCheckQuery.query, duplicateCheckQuery.values);
+
+    if (duplicateCheckResult.length > 0) {
+      res.status(400).send({ message: msj.duplicatedUser });
+    } else {
+      const insertQuery = updateUser(idperson);
+      const result = await queryDatabasePromise(connection, insertQuery.query, insertQuery.values);
+    
+      await connection.commit(); // Confirmar la transacción para insertar el usuario
+
+      connection.beginTransaction(); // Iniciar una nueva transacción
+
+      const duplicateCheckRolQuery = await checkDuplicateUserRolUpdate(userId, idrol);
+      const duplicateCheckRolResult = await queryDatabasePromise(connection, duplicateCheckRolQuery.query, duplicateCheckRolQuery.values);
+
+      if (duplicateCheckRolResult.length > 0) {
+        res.status(400).send({ message: msj.duplicatedUser });
+      } else {
+        const hashedPassword = bcrypt.hashSync(pass, 10);
+        const insertRolQuery = await insertUserRol(id, userId, idrol, hashedPassword);
+        await queryDatabasePromise(connection, insertRolQuery.query, insertRolQuery.values);
+        await connection.commit(); // Confirmar la transacción para insertar el rol del usuario
+        res.status(200).send({ message: msj.successPost });
+      }
+    }
+  } catch (err) {
+    if (connection) {
+      await connection.rollback(); // Revertir la transacción en caso de error
+      res.status(500).send({ message: msj.errorQuery });
+    }
+    res.status(500).send({ message: msj.errorQuery });
+  }
+});
+
+router.put("/update/:id", async (req, res) => {
+  const id = req.params.id;
+  const { idperson } = req.body;
+
+  try {
+    const duplicateCheckQuery = await checkDuplicateUserUpdate(idperson, id);
+    const duplicateCheckResult = await queryDatabase(duplicateCheckQuery.query, duplicateCheckQuery.values);
+
+    if (duplicateCheckResult.length > 0) {
+      res.status(400).send({ message: msj.checkDuplicateUser });
+      return;
+    }
+
+    const updateQuery = updateUser(id, idperson);
+    await queryDatabase(updateQuery.query, updateQuery.values);
+    res.status(200).send({ message: msj.successPut });
+  } catch (err) {
+    console.log(err)
+    res.status(500).send({ message: msj.errorQuery });
+  }
+});
+
+router.put("/update/rol/:id", async (req, res) => {
+  const id = req.params.id;
+  const { iduser, idrol, pass } = req.body;
+  console.log(req.body)
+  let hashedPassword;
+  try {
+    const duplicateCheckQuery = await checkDuplicateUserRolUpdate(iduser, id);
+    const duplicateCheckResult = await queryDatabase(duplicateCheckQuery.query, duplicateCheckQuery.values);
+
+    if (duplicateCheckResult.length > 0) {
+      res.status(400).send({ message: msj.checkDuplicateUser });
+      return;
+    }
+    if(pass){
+      hashedPassword = bcrypt.hashSync(pass, 10);
+    }
+    
+    const updateQuery = updateUserRol(id, iduser, idrol, hashedPassword);
+    await queryDatabase(updateQuery.query, updateQuery.values);
+    res.status(200).send({ message: msj.successPut });
+  } catch (err) {
+    console.log(err)
+    res.status(500).send({ message: msj.errorQuery });
+  }
+});
+
+router.delete("/delete/:id", async (req, res) => {
   const id = req.params.id;
 
-  queryDatabase(checkDuplicateUser(email, id))
-    .then((duplicates) => {
-      if (duplicates.length > 0) {
-        res.status(400).send({ message: duplicatedUser });
-      } else {
-        // Generar un salt para encriptar la contraseña
-        const salt = bcrypt.genSaltSync(10);
-        // Encriptar la contraseña con el salt
-        const hashedPassword = bcrypt.hashSync(pass, salt);
+  try {
+    const deleteQuery = deleteUser(id);
+    const result = await queryDatabase(deleteQuery.query, deleteQuery.value);
 
-        const { query, values } = updateUser(id, name, email, idrol, hashedPassword);
-
-        queryDatabase(query, values)
-          .then((results) => {
-            if (results.affectedRows > 0) {
-              res.send({ message: successPut, user: { id, name, email, idrol } });
-            } else {
-              res.status(404).send({ message: notFound });
-            }
-          })
-          .catch((err) => {
-            res.status(500).send({ message: errorQuery });
-          });
-      }
-    })
-    .catch((err) => {
-      res.status(500).send({ message: errorQuery });
-    });
-});
-
-router.delete("/delete/:id", (req, res) => {
-  const id = req.params.id;
-  queryDatabase(deleteUser(id))
-    .then((results) => {
-      if (results.affectedRows > 0) {
-        res.send({ message: successDelete });
-      } else {
-        res.status(404).send({ message: notFound });
-      }
-    })
-    .catch((err) => {
-      res.status(500).send({ message: errorQuery });
-    });
+    if (result.affectedRows === 0) {
+      res.status(404).send({ message: msj.notFound });
+    } else {
+      res.status(200).send({ message: msj.successDelete });
+    }
+  } catch (err) {
+    res.status(500).send({ message: msj.errorQuery });
+  }
 });
 
 module.exports = router;

@@ -65,8 +65,8 @@ router.post("/post", async (req, res) => {
       res.status(400).send({ message: msj.duplicatedLocation });
     } else {
       const insertQuery = insertLocation(idcommunity, name);
-      const results = await queryDatabase(insertQuery.query, insertQuery.values);
-      res.send(results);
+      await queryDatabase(insertQuery.query, insertQuery.values);
+      res.status(200).send({ message: msj.successPost });
     }
   } catch (err) {
     res.status(500).send({ message: msj.errorQuery });
@@ -87,8 +87,8 @@ router.put("/update/:id", async (req, res) => {
     }
 
     const updateQuery = updateLocation(id, name, idcommunity);
-    const results = await queryDatabase(updateQuery.query, updateQuery.values);
-    res.send(results);
+    await queryDatabase(updateQuery.query, updateQuery.values);
+    res.status(200).send({ message: msj.successPut });
   } catch (err) {
     res.status(500).send({ message: msj.errorQuery });
   }

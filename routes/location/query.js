@@ -1,20 +1,6 @@
 function getLocations() {
     return `
-      SELECT
-        l.id,
-        d.name as "department",
-        p.name as "province",
-        m.name as "municipality",
-        c.name as "community",
-        l.name,
-        l.createdAt
-      FROM location l
-      JOIN community c on l.idcommunity = c.id
-      JOIN municipality m on c.idmunicipality = m.id
-      JOIN province p on m.idprovince = p.id
-      JOIN department d on p.iddepartment = d.id
-      WHERE c.deleted = 0
-    `;
+      SELECT l.* FROM location l WHERE l.deleted = 0`
 }
 
 function getTotalRecords(id) {

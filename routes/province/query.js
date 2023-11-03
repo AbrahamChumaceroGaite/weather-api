@@ -46,7 +46,7 @@ function getProvinceById(id) {
 }
 
 function checkDuplicateProvince(name, iddepartment, id = null) {
-  let query = "SELECT * FROM province WHERE name = ? AND iddepartment = ?";
+  let query = "SELECT * FROM province WHERE name = ? AND iddepartment = ? AND deleted = 0";
   const values = [name, iddepartment];
 
   if (id !== null) {

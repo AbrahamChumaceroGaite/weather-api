@@ -6,6 +6,7 @@ const municipality = require('../routes/municipality/municipality');
 const community = require('../routes/community/community');
 const locations = require('../routes/location/location');
 const client = require('../routes/client/client');
+const person = require('../routes/person/person');
 const rol = require('../routes/rol/rol');
 const user = require('../routes/user/users');
 const login = require('../routes/login/login');
@@ -19,6 +20,7 @@ module.exports = {
     community,
     locations,
     client,
+    person,
     rol,
     user,
     login

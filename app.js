@@ -29,6 +29,7 @@ app.use('/weather/api/community', verifyToken,routes.community);
 app.use('/weather/api/location', verifyToken,routes.locations);
 app.use('/weather/api/device/client', verifyToken,routes.deviceclient);
 app.use('/weather/api/client', verifyToken,routes.client);
+app.use('/weather/api/person', verifyToken,routes.person);
 app.use('/weather/api/rol', verifyToken,routes.rol);
 app.use('/weather/api/user', verifyToken,routes.user);
 

@@ -4,7 +4,6 @@ const msj = require("../../templates/messages");
 const { queryDatabase } = require("../../services/db/query");
 const { getRoles, postRole, updateRole, deleteRole, checkDuplicateRole } = require("./query");
 
-// Endpoint para obtener roles
 router.get("/get", async (req, res) => {
   try {
     const results = await queryDatabase(getRoles());
@@ -14,7 +13,6 @@ router.get("/get", async (req, res) => {
   }
 });
 
-// Endpoint para crear un rol
 router.post("/post", async (req, res) => {
   const rol = req.body.rol;
 
@@ -32,7 +30,6 @@ router.post("/post", async (req, res) => {
   }
 });
 
-// Endpoint para actualizar un rol
 router.put("/update/:id", async (req, res) => {
   const id = req.params.id;
   const rol = req.body.rol;
@@ -51,13 +48,18 @@ router.put("/update/:id", async (req, res) => {
   }
 });
 
-// Endpoint para eliminar un rol
 router.delete("/delete/:id", async (req, res) => {
   const id = req.params.id;
 
   try {
-    const results = await queryDatabase(deleteRole(id));
-    res.send(results);
+    const deleteQuery = deleteRole(id);
+    const result = await queryDatabase(deleteQuery.query, deleteQuery.value);
+
+    if (result.affectedRows === 0) {
+      res.status(404).send({ message: msj.notFound });
+    } else {
+      res.status(200).send({ message: msj.successDelete });
+    }
   } catch (err) {
     res.status(500).send({ message: msj.errorQuery });
   }

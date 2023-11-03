@@ -88,7 +88,7 @@ router.post("/post", async (req, res) => {
       const result = await queryDatabase(query, value);
 
       if (result.affectedRows === 1) {
-        res.status(201).send({ message: msj.successPost });
+        res.status(200).send({ message: msj.successPost });
       } else {
         res.status(500).send({ message: msj.errorQuery });
       }

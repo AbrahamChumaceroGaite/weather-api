@@ -1,86 +1,101 @@
 function getClients() {
-    return sql = `
-      SELECT c.*, r.rol as "rol", lo.name as "location"
-      FROM client c
-      JOIN rol r on c.idrol = r.id
-      JOIN location lo on c.idlocation = lo.id
-      WHERE c.deleted = 0
-    `;
+    return `SELECT * FROM client WHERE deleted = 0`;
+}
+
+function getTotalRecords() {
+    return `SELECT COUNT(*) as totalRecords FROM client WHERE deleted = 0`;
+}
+
+function getLazy(startIndex, numRows, globalFilter, sortField, sortOrder) {
+    let query = `SELECT c.id, CONCAT_WS(' ', p.name, p.lastname) as user, l.name AS "location", c.createdAt, c.createdUpd
+    FROM client c
+    JOIN person p ON c.idperson = p.id
+    JOIN location l ON p.idlocation = l.id
+    WHERE c.deleted = 0`;
+
+    if (globalFilter) {
+        query += ` AND (p.lastname LIKE '%${globalFilter}%' OR p.name LIKE '%${globalFilter}%')`;
+    }
+
+    if (sortField && sortOrder) {
+        query += ` ORDER BY ${sortField} ${sortOrder === '1' ? 'ASC' : 'DESC'}`;
+    }
+
+    query += ` LIMIT ${startIndex}, ${numRows}`;
+
+    return query;
 }
 
 function getClientById(id) {
-    return {
-        query: `SELECT * FROM client WHERE id = ?`,
-        value: [id]
-    }
+    return `SELECT c.id, CONCAT_WS(' ', p.name, p.lastname) as user, c.createdAt, c.createdUpd
+    FROM client c
+    JOIN person p ON c.idperson = p.id
+    WHERE c.id = ${id} AND c.deleted = 0`;
 }
 
-function postClient(name, hashedPassword, ci, idrol, idlocation, number) {
+function insertClient(idperson) {
     return {
-        query: "INSERT INTO client (name, pass, ci, idrol, idlocation, number) VALUES (?, ?, ?, ?, ?, ?)",
-        values: [name, hashedPassword, ci, idrol, idlocation, number]
-    }
+        query: "INSERT INTO client (idperson) VALUES (?)",
+        values: [idperson],
+    };
 }
 
-function checkExistingClient(ci) {
+function updateClient(id, idperson) {
+    let query = "UPDATE client SET";
+    const values = [];
+
+    if (idperson) {
+        query += " idperson = ?,";
+        values.push(idperson);
+    }
+
+    query = query.slice(0, -1);
+    query += " WHERE id = ?";
+    values.push(id);
+
     return {
-        query: "SELECT * FROM client WHERE ci = ?",
-        values: [ci]
-    }
-}
-
-function checkExistingClientUpdate(ci, currentClientId) {
-    return {
-        query: "SELECT * FROM client WHERE ci = ? AND id <> ?",
-        values: [ci, currentClientId]
-    }
-}
-
-function updateClient(id, name, hashedPassword, ci, idlocation, number) {
-    const value = [id];
-    let query = "UPDATE client SET ";
-
-    if (name) {
-        query += `name=?, `;
-        value.push(name);
-    }
-    if (hashedPassword) {
-        query += `pass=?, `;
-        value.push(hashedPassword);
-    }
-    if (ci) {
-        query += `ci=?, `;
-        value.push(ci);
-    }
-    if (idlocation) {
-        query += `idlocation=?, `;
-        value.push(idlocation);
-    }
-    if (number) {
-        query += `number=?, `;
-        value.push(number);
-    }
-
-    // Elimina la coma final y agrega la condición WHERE
-    query = query.slice(0, -2);
-    query += ` WHERE id = ?`;
-
-    return { query, value };
+        query,
+        values,
+    };
 }
 
 function deleteClient(id) {
     return {
         query: "UPDATE client SET deleted = 1 WHERE id = ?",
-        value: [id]
+        values: [id]
+    };
+}
+
+function checkDuplicateClient(idperson) {
+    return {
+        query: "SELECT * FROM client WHERE idperson = ?",
+        values: [idperson]
+    };
+}
+
+function checkDuplicateClientUpdate(idperson, id = null) {
+    let query = "SELECT * FROM client WHERE idperson = ? ";
+    const values = [idperson];
+
+    if (id !== null) {
+        query += " AND id <> ?";
+        values.push(id);
     }
+
+    return {
+        query,
+        values,
+    };
 }
 
 module.exports = {
     getClients,
     getClientById,
-    postClient,
-    checkExistingClient,
-    checkExistingClientUpdate,
+    getTotalRecords,
+    getLazy,
+    insertClient,
     updateClient,
-    deleteClient
-}
+    deleteClient,
+    checkDuplicateClient,
+    checkDuplicateClientUpdate
+};

@@ -10,9 +10,22 @@ function postRole(rol) {
 }
 
 function updateRole(id, rol) {
+    let query = "UPDATE rol SET";
+    const values = [];
+
+    if (rol) {
+        query += " rol = ? ";
+        values.push(rol);
+    }
+
+    // Remove the trailing comma and add the WHERE condition
+    query = query.slice(0, -1);
+    query += " WHERE id = ?";
+    values.push(id);
+
     return {
-        query: "UPDATE rol SET rol = ? WHERE id = ?",
-        values: [rol, id]
+        query,
+        values,
     };
 }
 
@@ -23,10 +36,30 @@ function deleteRole(id) {
     };
 }
 
-function checkDuplicateRole(rol, id) {
+function checkDuplicateRole(rol) {
     return {
-        query: "SELECT * FROM rol WHERE rol = ? AND id <> ?",
-        values: [rol, id]
+        query: "SELECT * FROM rol WHERE rol = ?",
+        values: [rol]
+    };
+}
+
+function checkDuplicateRoleUpdate(rol, id = null) {
+    let query = "SELECT * FROM person WHERE ";
+    const values = [];
+
+    if (ci) {
+        query += "rol = ? ";
+        values.push(croli);
+    }
+ 
+    if (id !== null) {
+        query += " AND id <> ?";
+        values.push(id);
+    }
+
+    return {
+        query,
+        values,
     };
 }
 
