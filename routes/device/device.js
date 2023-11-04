@@ -39,7 +39,6 @@ router.get('/get/list/data', verifyToken, async (req, res) => {
 });
 
 router.post("/post", async (req, res) => {
-  console.log(req.body)
   try {
     const data = req.body;
     const idDevice = data.iddevice;
