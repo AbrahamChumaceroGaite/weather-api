@@ -1,27 +1,23 @@
 const mysql = require("mysql2");
 const mysqlPromise = require("mysql2/promise");
+require('dotenv').config();
+console.log(process.env.DB_HOSTCOOLIFYP); // Verifica las variables de entorno
 
-/* const connection = mysql.createConnection({
-  host: 'cljf4js2800mznqd6o8b43qyk',
-  user: 'root',
-  password: 'password@2022',
-  database: 'monitor'
-}); */
 
 const connection = mysql.createConnection({
-  host: '181.188.156.195',
-  port: '18001',
-  user: 'clnymjgu10hh3cgpm7yie35j8',
-  password: 'xw8LqMzkm7ZCE0QFOOk80WqJ',
-  database: 'monitor'
+  host: process.env.DB_HOSTCOOLIFYP,
+  port: process.env.DB_PORTCOOLIFY,
+  user: process.env.DB_USERCOOLIFY,
+  password: process.env.DB_PASSWORDCOOLIFY,
+  database: process.env.DB_DATABASECOOLIFY
 });
 
 const connectionPromise = mysqlPromise.createConnection({
-  host: '181.188.156.195',
-  port: '18001',
-  user: 'clnymjgu10hh3cgpm7yie35j8',
-  password: 'xw8LqMzkm7ZCE0QFOOk80WqJ',
-  database: 'monitor'
+  host: process.env.DB_HOSTCOOLIFYP,
+  port: process.env.DB_PORTCOOLIFY,
+  user: process.env.DB_USERCOOLIFY,
+  password: process.env.DB_PASSWORDCOOLIFY,
+  database: process.env.DB_DATABASECOOLIFY
 });
 
 module.exports = { connection, connectionPromise };
