@@ -1,5 +1,5 @@
 const device = require('../routes/device/device');
-const deviceclient = require('../routes/deviceclient/deviceclient');
+const deviceclient = require('../routes/deviceClient/deviceclient');
 const department = require('../routes/department/department');
 const province = require('../routes/province/province');
 const municipality = require('../routes/municipality/municipality');
