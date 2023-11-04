@@ -3,51 +3,35 @@ const router = express.Router();
 const verifyToken = require('../../middleware/middleware');
 const { queryDatabase } = require("../../services/db/query");
 const msj = require("../../templates/messages");
-const { getDevices, getDeviceList, getDeviceListById, insertDeviceData, deleteDevice } = require("./query-device");
-const { getAllDeviceIdentities, getDeviceIdentityById, getUnusedDeviceIdentities, insertDeviceIdentity, updateDeviceIdentity, deleteDeviceIdentity } = require("./query-identity");
+const { getData, getDataLast,  getDeviceIdLocation, insertDeviceData, deleteDevice } = require("./query-device");
+const { getDevicesIdentity, getLazy, getTotalRecords, getDeviceIdentityById, getUnusedDeviceIdentities, insertDeviceIdentity, updateDeviceIdentity, deleteDeviceIdentity } = require("./query-identity");
 
-router.get("/get", verifyToken, async (req, res) => {
+router.get("/get/list/last", verifyToken, async (req, res) => {
+  const id = req.query.idevice;
   try {
-    const devicesQuery = getDevices();
-    const devices = await queryDatabase(devicesQuery);
+    const {query, values} = await getDataLast(id);
+    const deviceLast = await queryDatabase(query, values);
 
-    if (devices.length === 0) {
+    if (deviceLast.length === 0) {
       res.status(404).send({ message: msj.notFound });
     } else {
-      res.send(devices);
+      res.send(deviceLast);
     }
   } catch (err) {
     res.status(500).send({ message: msj.errorQuery });
   }
 });
 
-router.get("/get/list", verifyToken, async (req, res) => {
+router.get('/get/list/data', verifyToken, async (req, res) => {
+  const { idevice, startDate, endDate } = req.query;
   try {
-    const deviceListQuery = getDeviceList();
-    const deviceList = await queryDatabase(deviceListQuery);
+    const { query, values } = await getData(idevice, startDate, endDate);
+    const deviceData = await queryDatabase(query, values );
 
-    if (deviceList.length === 0) {
+    if (deviceData.length === 0) {
       res.status(404).send({ message: msj.notFound });
-    } else {
-      res.send(deviceList);
-    }
-  } catch (err) {
-    res.status(500).send({ message: msj.errorQuery });
-  }
-});
-
-router.get('/get/list/byId/:id', verifyToken, async (req, res) => {
-  const id = req.params.id;
-  const { startDate, endDate } = req.query;
-
-  try {
-    const { query, value } = getDeviceListById(id, startDate, endDate);
-    const deviceList = await queryDatabase(query, value);
-
-    if (deviceList.length === 0) {
-      res.status(404).send({ message: msj.notFound });
-    } else {
-      res.send(deviceList);
+    } else {     
+      res.send(deviceData);
     }
   } catch (err) {
     res.status(500).send({ message: msj.errorQuery });
@@ -57,16 +41,25 @@ router.get('/get/list/byId/:id', verifyToken, async (req, res) => {
 router.post("/post", async (req, res) => {
   try {
     const data = req.body;
-
-    const { query, values } = insertDeviceData(data);
-    const result = await queryDatabase(query, values);
-
-    if (result.affectedRows === 1) {
-      res.status(200).send({ message: msj.successPost });
+    const idDevice = data.iddevice;
+    const { querylocation, valueslocation } = await getDeviceIdLocation(idDevice);
+    const resultL = await queryDatabase(querylocation, valueslocation);
+    if (resultL.length === 0) {
+      res.status(404).send({ message: msj.notFound });
     } else {
-      res.status(500).send({ message: msj.errorQuery });
+      const idlocation = resultL[0].idlocation;
+      const { query, values } = insertDeviceData(idlocation, data);
+      const result = await queryDatabase(query, values);
+
+      if (result.affectedRows === 1) {
+        res.status(200).send({ message: msj.successPost });
+      } else {
+        res.status(500).send({ message: msj.errorQuery });
+      }
     }
+
   } catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
 });
@@ -112,9 +105,11 @@ router.delete("/delete/:id", verifyToken, async (req, res) => {
   }
 });
 
-router.get("/get/identity/list", verifyToken, async (req, res) => {
+// DEVICE TABLE
+
+router.get("/get/identity", verifyToken, async (req, res) => {
   try {
-    const query = getUnusedDeviceIdentities();
+    const query = await getDevicesIdentity();
     const results = await queryDatabase(query);
 
     if (results.length === 0) {
@@ -127,9 +122,9 @@ router.get("/get/identity/list", verifyToken, async (req, res) => {
   }
 });
 
-router.get("/get/identity", verifyToken, async (req, res) => {
+router.get("/get/identity/list", verifyToken, async (req, res) => {
   try {
-    const query = getAllDeviceIdentities();
+    const query = await getUnusedDeviceIdentities();
     const results = await queryDatabase(query);
 
     if (results.length === 0) {
@@ -138,6 +133,27 @@ router.get("/get/identity", verifyToken, async (req, res) => {
       res.send(results);
     }
   } catch (err) {
+    res.status(500).send({ message: msj.errorQuery });
+  }
+});
+
+router.get("/get/identity/Lazy", async (req, res) => {
+  const { first, rows, globalFilter, sortField, sortOrder } = req.query;
+  const startIndex = parseInt(first);
+  const numRows = parseInt(rows);
+  try {
+    const personQuery = await getLazy(startIndex, numRows, globalFilter, sortField, sortOrder);
+    const persons = await queryDatabase(personQuery);
+    const totalR = await queryDatabase(getTotalRecords())
+    const total = totalR[0].totalRecords;
+
+    if (total.length === 0) {
+      res.status(404).send({ message: msj.emptyQuery });
+    } else {
+      res.send({ items: persons, totalRecords: total });
+    }
+  } catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
 });
@@ -163,7 +179,7 @@ router.post("/post/identity", verifyToken, async (req, res) => {
   const { name, idlocation, status } = req.body;
 
   try {
-    const { query, values } = insertDeviceIdentity(name, idlocation, status);
+    const { query, values } = await insertDeviceIdentity(idlocation, name, status);
     const result = await queryDatabase(query, values);
 
     if (result.affectedRows === 1) {

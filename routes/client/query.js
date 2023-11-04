@@ -1,5 +1,5 @@
 function getClients() {
-    return `SELECT * FROM client WHERE deleted = 0`;
+    return `SELECT c.id, p.name AS "client" FROM client c JOIN person p ON c.idperson = p.id WHERE c.deleted = 0`;
 }
 
 function getTotalRecords() {

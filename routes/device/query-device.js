@@ -1,63 +1,53 @@
-const moment = require('moment-timezone');
-
-function getDevices() {
-    return "SELECT * FROM device WHERE device_id IS NOT NULL";
-}
-
-function getDeviceList() {
-    return `
-      SELECT c.name AS "client", de.*
-      FROM device de
-      LEFT JOIN device_id d ON d.name = de.device_id
-      LEFT JOIN device_client dc ON dc.idevice = d.id
-      LEFT JOIN client c ON dc.idclient = c.id
-    `;
-}
-
-function getDeviceListById(id, startDate, endDate) {
-    let sql = `
-      SELECT c.name AS client, d.id AS deviceid, de.*
-      FROM device de
-      LEFT JOIN device_id d ON d.name = de.device_id
-      LEFT JOIN device_client dc ON dc.idevice = d.id
-      LEFT JOIN client c ON dc.idclient = c.id
-      WHERE d.id = ?
-    `;
-
-    if (startDate && endDate) {
-        const start = moment(startDate).utcOffset(-4, true);
-        const end = moment(endDate).utcOffset(-4, true);
-
-        if (start.isValid() && end.isValid()) {
-            sql += `
-          AND de.createdAt >= ?
-          AND de.createdAt <= ?
-        `;
-            return {
-                query: sql,
-                value: [id, start.format('YYYY-MM-DD HH:mm:ss'), end.format('YYYY-MM-DD HH:mm:ss')],
-            };
-        }
-    }
+function getDataLast(id) {
+    const query = `SELECT de.name, d.*, DATE_FORMAT(CONVERT_TZ(d.createdAt, '+00:00', '-04:00'), '%Y-%m-%d %H:%i:%s') AS newCreatedAt
+    FROM device_data d
+    JOIN device de ON d.iddevice = de.id
+    WHERE d.iddevice = ?
+    ORDER BY createdAt DESC
+        LIMIT 1`;
 
     return {
-        query: sql,
-        value: [id],
+        query,
+        values: [id]
     };
 }
 
-function insertDeviceData(data) {
-    const { device_id, temp, hum, pres, uv, altitude, rain, windf, winds, batt_level, lat, lon, number } = data;
+function getData(id, startDate, endDate) {
+    let query = `SELECT de.name, d.*, DATE_FORMAT(CONVERT_TZ(d.createdAt, '+00:00', '-04:00'), '%Y-%m-%d %H:%i:%s') AS newCreatedAt
+                 FROM device_data d
+                 JOIN device de ON d.iddevice = de.id
+                 WHERE d.iddevice = ? `;
+  
+    const values = [id];
+  
+    if (startDate && endDate) {
+      query += ` AND d.createdAt BETWEEN ? AND ?`;
+      values.push(startDate, endDate);
+    }
+  
+    query += ` ORDER BY createdAt DESC`;
+  
+    return {
+      query,
+      values
+    };
+  }
+  
 
-    const date = new Date();
-    const fecha = moment.utc(date).tz('America/La_Paz').format('YYYY-MM-DD HH:mm:ss');
+function getDeviceIdLocation(id) {
+    return {
+        querylocation: `SELECT idlocation FROM device WHERE id = ?`,
+        valueslocation: [id],
+    }
+}
+
+function insertDeviceData(idlocation, data) {
+    const { iddevice, temp, hum, pres, uv, altitude, rain, windf, winds, batt_level, lat, lon, number } = data;
 
     return {
-        query: `
-        INSERT INTO device (device_id, temp, hum, pres, uv, altitude, rain, windf, winds, batt_level, lat, lon, number, createdAt)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `,
-        values: [device_id, temp, hum, pres, uv, altitude, rain, windf, winds, batt_level, lat, lon, number, fecha],
+        query: `INSERT INTO device_data (iddevice, idlocation, temp, hum, pres, uv, altitude, rain, windf, winds, batt_level, lat, lon, number)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) `,
+        values: [iddevice, idlocation, temp, hum, pres, uv, altitude, rain, windf, winds, batt_level, lat, lon, number],
     };
 }
 
@@ -69,9 +59,9 @@ function deleteDevice(id) {
 }
 
 module.exports = {
-    getDevices,
-    getDeviceList,
-    getDeviceListById,
+    getData,
+    getDataLast,
+    getDeviceIdLocation,
     insertDeviceData,
     deleteDevice
-};
+}

@@ -2,12 +2,11 @@ const express = require("express");
 const router = express.Router();
 const { queryDatabase } = require("../../services/db/query");
 const msj = require("../../templates/messages");
-const { getActiveDeviceClients, getDeviceClientById, checkDuplicateDeviceClient, insertDeviceClient, updateDeviceClient, deleteDeviceClient } = require("./query");
+const { getDeviceClients, getDeviceClientById, checkDuplicateDeviceClient, insertDeviceClient, updateDeviceClient, deleteDeviceClient } = require("./query");
 
 router.get("/get", async (req, res) => {
   try {
-    const query = getActiveDeviceClients();
-    const results = await queryDatabase(query);
+    const results = await queryDatabase(getDeviceClients());
 
     if (results.length === 0) {
       res.status(404).send({ message: msj.notFound });
@@ -23,8 +22,8 @@ router.get("/getById/:id", async (req, res) => {
   const id = req.params.id;
 
   try {
-    const query = getDeviceClientById(id);
-    const results = await queryDatabase(query);
+    const { query, values } = getDeviceClientById(id);
+    const results = await queryDatabase(query, values);
 
     if (results.length === 0) {
       res.status(404).send({ message: msj.notFound });
@@ -37,20 +36,18 @@ router.get("/getById/:id", async (req, res) => {
 });
 
 router.post("/post", async (req, res) => {
-  const idclient = req.body.idclient;
-  const idevice = req.body.idevice;
-
+  const {idclient, idevice} = req.body
   try {
     // Verificar si ya existe la combinación idclient e idevice
-    const duplicateCheckQuery = checkDuplicateDeviceClient(idclient, idevice);
-    const duplicateCheckResult = await queryDatabase(duplicateCheckQuery);
+    const { query, values }  = await checkDuplicateDeviceClient(idclient, idevice);
+    const duplicateCheckResult = await queryDatabase(query, values );
 
     if (duplicateCheckResult.length > 0) {
       res.status(400).send({ message: msj.duplicatedDeviceClient });
     } else {
-      // Si no existe, realizar la inserción
-      const insertQuery = insertDeviceClient(idclient, idevice);
-      const insertResult = await queryDatabase(insertQuery);
+  
+      const { query, values }  = await insertDeviceClient(idclient, idevice);
+      const insertResult = await queryDatabase(query, values );
 
       if (insertResult.affectedRows === 1) {
         res.status(200).send({ message: msj.successPost });
@@ -59,26 +56,25 @@ router.post("/post", async (req, res) => {
       }
     }
   } catch (err) {
+    console.log(err)  
     res.status(500).send({ message: msj.errorQuery });
   }
 });
 
 router.put("/update/:id", async (req, res) => {
   const id = req.params.id;
-  const idclient = req.body.idclient;
-  const idevice = req.body.idevice;
-
+  const {idclient, idevice} = req.body
   try {
-    // Verificar si ya existe la combinación idclient e idevice (excluyendo el registro actual)
-    const duplicateCheckQuery = checkDuplicateDeviceClient(idclient, idevice, id);
-    const duplicateCheckResult = await queryDatabase(duplicateCheckQuery);
+    
+    const { query, values } = await checkDuplicateDeviceClient(idclient, idevice);    
+    const duplicateCheckResult = await queryDatabase(query, values);
 
     if (duplicateCheckResult.length > 0) {
       res.status(400).send({ message: msj.duplicatedEntry });
     } else {
       // Actualizar los campos específicos
-      const updateQuery = updateDeviceClient(id, idclient, idevice);
-      const updateResult = await queryDatabase(updateQuery);
+      const { query, values }  = await updateDeviceClient(id, idclient, idevice);
+      const updateResult = await queryDatabase(query, values);
 
       if (updateResult.affectedRows === 1) {
         res.status(200).send({ message: msj.successPut });
@@ -87,6 +83,7 @@ router.put("/update/:id", async (req, res) => {
       }
     }
   } catch (err) {
+    console.log(err);
     res.status(500).send({ message: msj.errorQuery });
   }
 });

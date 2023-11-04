@@ -1,90 +1,111 @@
 function getUnusedDeviceIdentities() {
-    return `
-      SELECT de.*
-      FROM device_id de
-      LEFT JOIN deviceclient c ON de.id = c.idevice
-      WHERE c.idevice IS NULL
-        AND de.deleted = 0
-        AND de.status = 1
-    `;
+  return `
+    SELECT de.id, de.name  FROM device de
+    LEFT JOIN device_client c ON de.id = c.idevice
+     WHERE c.idevice IS NULL AND de.deleted = 0 AND de.status = 1`;
 }
 
-function getAllDeviceIdentities() {
-    return `
-      SELECT de.*, lo.name AS "location", d.name AS "department"
-      FROM device_id de
-      JOIN location lo ON de.idlocation = lo.id
-      JOIN community co ON lo.idcommunity = co.id
-      JOIN municipality m ON co.idmunicipality = m.id
-      JOIN province p ON m.idprovince = p.id
-      JOIN department d ON p.iddepartment = d.id
-      WHERE de.deleted = 0
-    `;
+function getDevicesIdentity() {
+  return `SELECT de.id, de.name FROM device de WHERE de.deleted = 0 AND de.status = 1`
+}
+
+function getTotalRecords() {
+  return `SELECT COUNT(*) as totalRecords FROM device de
+  LEFT JOIN device_client dc ON de.id = dc.idevice
+  LEFT JOIN client cl ON dc.idclient = cl.id
+  LEFT JOIN person pe ON cl.idperson = pe.id
+  LEFT JOIN location l ON de.idlocation = l.id
+  LEFT JOIN community c ON l.idcommunity = c.id
+  LEFT JOIN municipality m ON c.idmunicipality = m.id
+  LEFT JOIN province p ON m.idprovince = p.id
+  LEFT JOIN department d ON p.iddepartment = d.id WHERE de.deleted = 0`;
+}
+
+function getLazy(startIndex, numRows, globalFilter, sortField, sortOrder) {
+  let query = `SELECT de.id, de.name as "code", COALESCE( CONCAT_WS(' ', pe.name, pe.lastname), 'Vacio') AS "client", COALESCE(pe.ci, 'Vacio') AS "ci", d.name AS "department", c.name AS "community", l.name AS "location", de.status, de.createdAt, de.createdUpd FROM device de
+  LEFT JOIN device_client dc ON de.id = dc.idevice
+  LEFT JOIN client cl ON dc.idclient = cl.id
+  LEFT JOIN person pe ON cl.idperson = pe.id
+  LEFT JOIN location l ON de.idlocation = l.id
+  LEFT JOIN community c ON l.idcommunity = c.id
+  LEFT JOIN municipality m ON c.idmunicipality = m.id
+  LEFT JOIN province p ON m.idprovince = p.id
+  LEFT JOIN department d ON p.iddepartment = d.id WHERE de.deleted = 0 AND l.deleted = 0 AND c.deleted = 0 AND m.deleted = 0 AND p.deleted = 0 AND d.deleted = 0`;
+
+  if (globalFilter) {
+    query += ` AND (c.name LIKE '%${globalFilter}%' OR l.name LIKE '%${globalFilter}%' OR d.name LIKE '%${globalFilter}%' OR de.name LIKE '%${globalFilter}%' OR pe.lastname LIKE '%${globalFilter}%' OR pe.name LIKE '%${globalFilter}%' OR pe.ci LIKE '%${globalFilter}%')`;
+  }
+
+  if (sortField && sortOrder) {
+    query += ` ORDER BY ${sortField} ${sortOrder === '1' ? 'ASC' : 'DESC'}`;
+  }
+
+  query += ` LIMIT ${startIndex}, ${numRows}`;
+
+  return query;
 }
 
 function getDeviceIdentityById(id) {
-    return {
-        query: `SELECT *
-        FROM device_id
-        WHERE id = ?
-      `,
-        value: [id],
-    }
-
+  return {
+    query: `SELECT * FROM device WHERE id = ?`,
+    value: [id],
+  }
 }
 
-function insertDeviceIdentity(name, idlocation, status) {
-    return {
-        query: `
-        INSERT INTO device_id (name, idlocation, status)
+function insertDeviceIdentity(idlocation, name, status) {
+  return {
+    query: `
+        INSERT INTO device (idlocation, name, status)
         VALUES (?, ?, ?)
       `,
-        values: [name, idlocation, status],
-    };
+    values: [idlocation, name, status],
+  };
 }
 
 function updateDeviceIdentity(id, name, idlocation, status) {
-    let query = "UPDATE device_id SET";
-    const values = [];
-  
-    if (name !== undefined) {
-      query += ` name=?,`;
-      values.push(name);
-    }
-  
-    if (idlocation !== undefined) {
-      query += ` idlocation=?,`;
-      values.push(idlocation);
-    }
-  
-    if (status !== undefined) {
-      query += ` status=?,`;
-      values.push(status);
-    }
-  
-    // Elimina la coma final y agrega la condición WHERE
-    query = query.slice(0, -1);
-    query += ` WHERE id = ?`;
-    values.push(id);
-  
-    return {
-      query,
-      values,
-    };
+  let query = "UPDATE device SET";
+  const values = [];
+
+  if (name !== undefined) {
+    query += ` name = ?,`;
+    values.push(name);
   }
 
+  if (idlocation !== undefined) {
+    query += ` idlocation = ?,`;
+    values.push(idlocation);
+  }
+
+  if (status !== undefined) {
+    query += ` status = ? `;
+    values.push(status);
+  }
+
+  // Elimina la coma final y agrega la condición WHERE
+  query = query.slice(0, -1);
+  query += ` WHERE id = ?`;
+  values.push(id);
+
+  return {
+    query,
+    values,
+  };
+}
+
 function deleteDeviceIdentity(id) {
-    return {
-        query: "UPDATE device_id SET deleted = 1 WHERE id = ?",
-        value: [id],
-    };
+  return {
+    query: "UPDATE device SET deleted = 1 WHERE id = ?",
+    value: [id],
+  };
 }
 
 module.exports = {
-    getUnusedDeviceIdentities,
-    getAllDeviceIdentities,
-    getDeviceIdentityById,
-    insertDeviceIdentity,
-    updateDeviceIdentity,
-    deleteDeviceIdentity,
+  getDevicesIdentity,
+  getTotalRecords,
+  getLazy,
+  getUnusedDeviceIdentities,
+  getDeviceIdentityById,
+  insertDeviceIdentity,
+  updateDeviceIdentity,
+  deleteDeviceIdentity,
 };

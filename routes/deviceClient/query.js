@@ -1,28 +1,26 @@
-function getActiveDeviceClients() {
+function getDeviceClients() {
     return `
-      SELECT dc.id, c.name AS "client", d.id AS "idevice", d.name AS "device", dc.createdAt
-      FROM device_client dc
-      JOIN client c ON dc.idclient = c.id
-      JOIN device_id d ON dc.idevice = d.id
-      WHERE dc.deleted = 0 AND d.status = 1 AND d.deleted = 0
-    `;
+    SELECT c.id, p.name AS "client", dc.createdAt, dc.createdUpd
+    FROM device_client dc
+    JOIN client c ON dc.idclient = c.id
+    JOIN person p ON c.idperson = p.id`;
 }
 
 function getDeviceClientById(id) {
-    return `
-      SELECT *
-      FROM device_client
-      WHERE id = ?
-    `;
+    return {
+        query: `SELECT dc.id, c.id AS "idclient", p.name AS "client", dc.createdAt, dc.createdUpd
+        FROM device_client dc
+        JOIN device d ON dc.idevice = d.id
+        JOIN client c ON dc.idclient = c.id
+        JOIN person p ON c.idperson = p.id
+        WHERE d.id = ? AND dc.deleted = 0`,
+        values: [id],
+    };
 }
 
 function checkDuplicateDeviceClient(idclient, idevice) {
     return {
-        query: `
-        SELECT idclient, idevice
-        FROM device_client
-        WHERE idclient = ? AND idevice = ?
-      `,
+        query: `SELECT * FROM device_client WHERE idclient = ? AND idevice = ? AND deleted = 0`,
         values: [idclient, idevice],
     };
 }
@@ -30,8 +28,8 @@ function checkDuplicateDeviceClient(idclient, idevice) {
 function insertDeviceClient(idclient, idevice) {
     return {
         query: `
-        INSERT INTO device_client (idclient, idevice, deleted)
-        VALUES (?, ?, 0)
+        INSERT INTO device_client (idclient, idevice)
+        VALUES (?, ?)
       `,
         values: [idclient, idevice],
     };
@@ -42,12 +40,12 @@ function updateDeviceClient(id, idclient, idevice) {
     const values = [];
 
     if (idclient !== undefined) {
-        query += ` idclient=?,`;
+        query += ` idclient = ?,`;
         values.push(idclient);
     }
 
     if (idevice !== undefined) {
-        query += ` idevice=?,`;
+        query += ` idevice = ? `;
         values.push(idevice);
     }
 
@@ -64,17 +62,13 @@ function updateDeviceClient(id, idclient, idevice) {
 
 function deleteDeviceClient(id) {
     return {
-        query: `
-        UPDATE device_client
-        SET deleted = 1
-        WHERE id = ?
-      `,
+        query: `UPDATE device_client SET deleted = 1 WHERE id = ?`,
         values: [id],
     };
 }
 
 module.exports = {
-    getActiveDeviceClients,
+    getDeviceClients,
     getDeviceClientById,
     checkDuplicateDeviceClient,
     insertDeviceClient,
