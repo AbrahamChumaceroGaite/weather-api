@@ -16,7 +16,7 @@ app.use(bodyParser.json());
 
 // Rutas a usar de prueba
 app.get("/weather/api/test", (req, res) => {
-  res.send("El Servidor esta bien prendido");
+  res.send("El Servidor esta prendido");
 });
 
 app.use('/weather/api/device', routes.device);
