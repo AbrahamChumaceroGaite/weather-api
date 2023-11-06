@@ -23,6 +23,13 @@ function checkIfExistsUser(id, endpoint, p256dh, auth) {
     return { queryCheck, valuesCheck }
 }
 
+function insertReport(id, message) {
+    const queryInsert = 'INSERT INTO user_report (iduserRol, idcode_message) VALUES (?,?)'
+    const valuesInsert = [id, message]
+    return { queryInsert, valuesInsert }
+
+}
+
 function getNotificacionsUser(id, startIndex, numRows) {
     let query = `SELECT cm.code, cm.message FROM user_report ur
     JOIN code_messages cm ON ur.idcode_message = cm.id
@@ -110,6 +117,7 @@ module.exports = {
     getNotificationCode,
     susbcribeUser,
     checkIfExistsUser,
+    insertReport,
     getNotificacionsUser,
     getCountNotificacionsUser,
     getReport,

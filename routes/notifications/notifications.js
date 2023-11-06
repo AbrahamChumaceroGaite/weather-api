@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express();
-const { susbcribeUser, checkIfExistsUser, getSubscriptionUser, getNotificationCode, getNotificacionsUser, getCountNotificacionsUser, getReport, getCountReports, readNotificationUser, MainDashboardUser } = require('./query-user');
+const { susbcribeUser, checkIfExistsUser, insertReport, getSubscriptionUser, getNotificationCode, getNotificacionsUser, getCountNotificacionsUser, getReport, getCountReports, readNotificationUser, MainDashboardUser } = require('./query-user');
 const { susbcribeClient, checkIfExistsClient, getNotificacionsClient, getCountNotificacionsClient, readNotificationClient } = require('./query-client');
 const { queryDatabase } = require('../../services/db/query')
 const verifyToken = require('../../middleware/middleware');
@@ -22,9 +22,6 @@ module.exports = (io) => {
     const p256dh = req.body.body.keys.p256dh;
     const auth = req.body.body.keys.auth;
 
-    console.log("ID: ", req.body)
-    console.log("Data: ", req.body.body.keys)
-
     try {
 
       const { queryCheck, valuesCheck } = await checkIfExistsUser(id, endpoint, p256dh, auth);
@@ -45,17 +42,21 @@ module.exports = (io) => {
           const { queryGetMsg, valuesGetMsg } = await getNotificationCode(code);
           const resultsGetMsg = await queryDatabase(queryGetMsg, valuesGetMsg);
           const content = resultsGetMsg[0].message;
-          const payload = await welcomePayloadUser(content);
+          const insertReportUser = await insertReport(id, code);
+          const resultInsertReport = await queryDatabase(insertReportUser.queryInsert, insertReportUser.valuesInsert);
 
-          await PushNotification(resultsGetUser[0], payload);
-
+          if (resultInsertReport.affectedRows === 1) {
+            const payload = await welcomePayloadUser(content);
+            await PushNotification(resultsGetUser[0], payload);
+          }         
           res.status(201).send({ message: msj.successPost });
         } else {
-          res.status(500).send({ message: msj.errorQuery });
+          console.log("Error al insertar la suscripción");
         }
       }
     } catch (err) {
       console.log(err)
+      res.status(500).send({ message: msj.errorQuery });
     }
   });
 
