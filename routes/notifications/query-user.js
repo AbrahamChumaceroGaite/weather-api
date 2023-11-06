@@ -5,7 +5,7 @@ function susbcribeUser(id, endpoint, p256dh, auth) {
 }
 
 function getSubscriptionUser(id) {
-    const queryGetSubs = 'SELECT endpoint, p256h, auth FROM subscribers_users WHERE id = ?'
+    const queryGetSubs = 'SELECT endpoint, p256dh, auth FROM subscribers_users WHERE id = ?'
     const valuesGetSubs = [id]
     return { queryGetSubs, valuesGetSubs }
 }
