@@ -22,21 +22,25 @@ module.exports = (io) => {
     const endpoint = req.body.body.endpoint;
     const p256dh = req.body.body.keys.p256dh;
     const auth = req.body.body.keys.auth;
+
+    console.log("ID: ", req.body)
+    console.log("Data: ", req.body.body.keys)
+
     try {
 
       const { queryCheck, valuesCheck } = await checkIfExistsUser(id, endpoint, p256dh, auth);
       const exists = await queryDatabase(queryCheck, valuesCheck)
 
-      if (exists) {
+      if (exists.length > 0) {
         res.json({ mensaje: "La suscripción ya existe." });
       } else {
         const { querySubs, valuesSubs } = await susbcribeUser(id, endpoint, p256dh, auth);
         const result = await queryDatabase(querySubs, valuesSubs);
-        const id = result.insertId;
+        const idnewsubscription = result.insertId;
 
         if (result.affectedRows === 1) {
 
-          const { queryGetSubs, valuesGetSubs } = await getSubscriptionUser(id);
+          const { queryGetSubs, valuesGetSubs } = await getSubscriptionUser(idnewsubscription);
           const resultsGetUser = await queryDatabase(queryGetSubs, valuesGetSubs);
           const code = 2033;
           const { queryGetMsg, valuesGetMsg } = await getNotificationCode(code);
@@ -51,7 +55,9 @@ module.exports = (io) => {
           res.status(500).send({ message: msj.errorQuery });
         }
       }
-    } catch (err) { console.log(err) }
+    } catch (err) {
+       console.log(err)
+       }
   });
 
   router.get('/get/report', verifyToken, async (req, res) => {
