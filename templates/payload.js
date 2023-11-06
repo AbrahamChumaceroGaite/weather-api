@@ -11,9 +11,23 @@ function welcomePayload(name) {
     }
 }
 
+function welcomePayloadUser(content) {
+    return {
+        "notification": {
+            "title": `¡Enhorabuena!`,
+            "body": content,
+            "icon": "",
+            "importance": "high",
+            "vibrate": [100, 50, 100],
+            "timestamp": Date.now() + 30 * 60 * 1000,
+        }
+    }
+}
+
 
 module.exports = {
     welcomePayload, 
+    welcomePayloadUser
 }
 
 

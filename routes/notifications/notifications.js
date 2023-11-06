@@ -5,6 +5,8 @@ const { susbcribeClient, checkIfExistsClient, getNotificacionsClient, getCountNo
 const { queryDatabase } = require('../../services/db/query')
 const verifyToken = require('../../middleware/middleware');
 const { pushnotification } = require('../../services/web_push/push-notification');
+const {welcomePayloadUser} = require('../../templates/payload');
+
 
 module.exports = (io) => {
   router.post('/testing', async (req, res) => {
@@ -39,7 +41,8 @@ module.exports = (io) => {
           const code = 2033;
           const { queryGetMsg, valuesGetMsg } = await getNotificationCode(code);
           const resultsGetMsg = await queryDatabase(queryGetMsg, valuesGetMsg);
-          const payload = resultsGetMsg[0].message;
+          const content = resultsGetMsg[0].message;
+          const payload = await welcomePayloadUser(content);
 
           await pushnotification(resultsGetUser[0], payload);
 
