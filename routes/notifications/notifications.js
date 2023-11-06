@@ -4,7 +4,7 @@ const { susbcribeUser, checkIfExistsUser, getSubscriptionUser, getNotificationCo
 const { susbcribeClient, checkIfExistsClient, getNotificacionsClient, getCountNotificacionsClient, readNotificationClient } = require('./query-client');
 const { queryDatabase } = require('../../services/db/query')
 const verifyToken = require('../../middleware/middleware');
-const { pushnotification } = require('../../services/web_push/push-notification');
+const { PushNotification } = require('../../services/web_push/push-notification');
 const { welcomePayloadUser } = require('../../templates/payload');
 
 
@@ -47,7 +47,7 @@ module.exports = (io) => {
           const content = resultsGetMsg[0].message;
           const payload = await welcomePayloadUser(content);
 
-          await pushnotification(resultsGetUser[0], payload);
+          await PushNotification(resultsGetUser[0], payload);
 
           res.status(201).send({ message: msj.successPost });
         } else {
