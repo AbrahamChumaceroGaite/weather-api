@@ -97,7 +97,7 @@ function MainDashboardUser() {
 
     const selectUsers = `SELECT COUNT(*) as total_users FROM user_rol WHERE deleted = 0`
 
-    const selectLocations = `SELECT COUNT(*) as total_locations FROM location WHERE deleted = 0`
+    const selectLocations = `SELECT DISTINCT lat, lon FROM device_data`
 
     return { selectClients, selectPersons, selectDeviceON, selectDeviceOFF, selectUsers, selectLocations }
 

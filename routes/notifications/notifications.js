@@ -122,7 +122,7 @@ module.exports = (io) => {
       const totalDeviceON = resultsDeviceON[0].total_devicesON;
       const totalDeviceOFF = resultsDeviceOFF[0].total_deviceOFF;
       const totalClients = resultsClients[0].total_clients;
-      const totalLocations = resultsLocations[0].total_locations;  
+      const totalLocations = resultsLocations;  
       res.json({
         totalUsers,
         totalPersons,
