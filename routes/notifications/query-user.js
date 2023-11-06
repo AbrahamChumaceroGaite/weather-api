@@ -4,6 +4,18 @@ function susbcribeUser(id, endpoint, p256dh, auth) {
     return { querySubs, valuesSubs }
 }
 
+function getSubscriptionUser(id) {
+    const queryGetSubs = 'SELECT endpoint, p256h, auth FROM subscribers_users WHERE id = ?'
+    const valuesGetSubs = [id]
+    return { queryGetSubs, valuesGetSubs }
+}
+
+function getNotificationCode(code) {
+    const queryGetMsg = 'SELECT message FROM code_messages WHERE code = ?'
+    const valuesGetMsg = [code]
+    return { queryGetMsg, valuesGetMsg }
+}
+
 function checkIfExistsUser(id, endpoint, p256dh, auth) {
     // Realiza una consulta para verificar si ya existe un registro con los mismos valores
     const queryCheck = 'SELECT * FROM susbcribers_users WHERE iduserRol = ? AND endpoint = ? AND p256dh = ? AND auth = ?';
@@ -94,6 +106,8 @@ function MainDashboardUser(id) {
 }
 
 module.exports = {
+    getSubscriptionUser,
+    getNotificationCode,
     susbcribeUser,
     checkIfExistsUser,
     getNotificacionsUser,
