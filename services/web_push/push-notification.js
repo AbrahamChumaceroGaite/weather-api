@@ -7,12 +7,12 @@ let VapidKeys = {
     publicKey: process.env.PUBLICKEY
 };
 
-async function PushNotification(subscription, payload){
+async function PushNotification(subscriptionData, payload){
     const subscription = {
-        endpoint: subscriptions.endpoint,
+        endpoint: subscriptionData.endpoint,
         keys: {
-            auth: subscriptions.auth,
-            p256dh: subscriptions.p256dh
+            auth: subscriptionData.auth,
+            p256dh: subscriptionData.p256dh
         }
     };
     try {
