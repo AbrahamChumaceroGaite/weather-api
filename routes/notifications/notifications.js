@@ -5,13 +5,12 @@ const { susbcribeClient, checkIfExistsClient, getNotificacionsClient, getCountNo
 const { queryDatabase } = require('../../services/db/query')
 const verifyToken = require('../../middleware/middleware');
 const { pushnotification } = require('../../services/web_push/push-notification');
-const {welcomePayloadUser} = require('../../templates/payload');
+const { welcomePayloadUser } = require('../../templates/payload');
 
 
 module.exports = (io) => {
   router.post('/testing', async (req, res) => {
     const notificationData = req.body;
-    const dada = "Toma mierda";
 
     io.emit('notification', notificationData);
     res.json({ mensaje: "A partir de ahora recibirá notificaciones de sus eventos y grupos." });
@@ -56,8 +55,8 @@ module.exports = (io) => {
         }
       }
     } catch (err) {
-       console.log(err)
-       }
+      console.log(err)
+    }
   });
 
   router.get('/get/report', verifyToken, async (req, res) => {

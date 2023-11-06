@@ -1,5 +1,5 @@
 function susbcribeUser(id, endpoint, p256dh, auth) {
-    const querySubs = 'INSERT INTO susbcribers_users (iduserRol, endpoint, p256dh, auth) VALUES (?,?,?,?)'
+    const querySubs = 'INSERT INTO subscribers_users (iduserRol, endpoint, p256dh, auth) VALUES (?,?,?,?)'
     const valuesSubs = [id, endpoint, p256dh, auth]
     return { querySubs, valuesSubs }
 }
@@ -18,7 +18,7 @@ function getNotificationCode(code) {
 
 function checkIfExistsUser(id, endpoint, p256dh, auth) {
     // Realiza una consulta para verificar si ya existe un registro con los mismos valores
-    const queryCheck = 'SELECT * FROM susbcribers_users WHERE iduserRol = ? AND endpoint = ? AND p256dh = ? AND auth = ?';
+    const queryCheck = 'SELECT * FROM subscribers_users WHERE iduserRol = ? AND endpoint = ? AND p256dh = ? AND auth = ?';
     const valuesCheck = [id, endpoint, p256dh, auth];
     return { queryCheck, valuesCheck }
 }
