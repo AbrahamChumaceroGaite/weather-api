@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express();
+const msj = require('../../templates/messages');
 const { susbcribeUser, checkIfExistsUser, insertReport, getSubscriptionUser, getNotificationCode, getNotificacionsUser, getCountNotificacionsUser, getReport, getCountReports, readNotificationUser, MainDashboardUser } = require('./query-user');
 const { susbcribeClient, checkIfExistsClient, getNotificacionsClient, getCountNotificacionsClient, readNotificationClient } = require('./query-client');
 const { queryDatabase } = require('../../services/db/query')
@@ -42,7 +43,8 @@ module.exports = (io) => {
           const { queryGetMsg, valuesGetMsg } = await getNotificationCode(code);
           const resultsGetMsg = await queryDatabase(queryGetMsg, valuesGetMsg);
           const content = resultsGetMsg[0].message;
-          const insertReportUser = await insertReport(id, code);
+          const codemsj = 11
+          const insertReportUser = await insertReport(id, codemsj);
           const resultInsertReport = await queryDatabase(insertReportUser.queryInsert, insertReportUser.valuesInsert);
 
           if (resultInsertReport.affectedRows === 1) {
