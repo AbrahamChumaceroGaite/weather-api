@@ -68,14 +68,14 @@ function checkDuplicateMunicipality(name, idprovince, id = null) {
   };
 }
 
-function insertMunicipality(idprovince, name) {
+function insertMunicipality(idprovince, name, idautor) {
   return {
-    query: "INSERT INTO municipality (idprovince, name) VALUES (?, ?)",
-    values: [idprovince, name],
+    query: "INSERT INTO municipality (idprovince, name, idautor) VALUES (?, ?, ?)",
+    values: [idprovince, name, idautor],
   };
 }
 
-function updateMunicipality(id, name, idprovince) {
+function updateMunicipality(id, name, idprovince, idautor) {
   let query = "UPDATE municipality SET";
   const values = [];
 
@@ -89,6 +89,10 @@ function updateMunicipality(id, name, idprovince) {
     values.push(idprovince);
   }
 
+  if (idautor) {
+    query += " idautorUpd = ?,";
+    values.push(idautor);
+  }
   // Elimina la coma final y agrega la condición WHERE
   query = query.slice(0, -1);
   query += " WHERE id = ?";

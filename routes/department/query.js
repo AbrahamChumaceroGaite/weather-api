@@ -58,8 +58,8 @@ function getDepartmentById(id) {
 
 function postDepartment(name) {
     return {
-        query: "INSERT INTO department (name) VALUES (?)",
-        value: [name],
+        query: "INSERT INTO department (name, idautor) VALUES (?, ?)",
+        value: [name, idautor],
     };
 }
 
@@ -70,16 +70,20 @@ function checkExistingDepartment(name) {
     };
 }
 
-function updateDepartment(id, name) {
+function updateDepartment(id, name, idautor) {
     let query = "UPDATE department SET";
     const value = [];
 
     if (name) {
-        query += ` name=?,`;
+        query += ` name = ? ,`;
         value.push(name);
     }
 
-    // Elimina la coma final y agrega la condición WHERE
+    if (idautor !== undefined) {
+        query += "idautorUpd = ? ";
+        values.push(idautor);
+    }
+    
     query = query.slice(0, -1);
     query += ` WHERE id = ?`;
     value.push(id);

@@ -56,16 +56,16 @@ function getCommunityById(id) {
     };
 }
 
-function postCommunity(name, idmunicipality) {
+function postCommunity(name, idmunicipality, idautor) {
     return {
-        query: "INSERT INTO community (idmunicipality, name) VALUES (?, ?)",
-        value: [idmunicipality, name],
+        query: "INSERT INTO community (idmunicipality, name, idautor) VALUES (?, ?, ?)",
+        value: [idmunicipality, name, idautor],
     };
 }
 
 function checkExistingCommunity(name, idmunicipality) {
     return {
-        query: "SELECT COUNT(*) FROM community WHERE name = ? AND idmunicipality = ? AND deleted = 0",
+        query: "SELECT * FROM community c WHERE c.name = ? AND c.deleted = 0",
         value: [name, idmunicipality],
     };
 }
@@ -85,17 +85,22 @@ function checkExistingCommunityUpdate(name, idmunicipality, id = null) {
     };
 }
 
-function updateCommunity(id, name, idmunicipality) {
+function updateCommunity(id, name, idmunicipality, idautor) {
     let query = "UPDATE community SET";
     const value = [];
 
     if (name) {
-        query += ` name=?,`;
+        query += ` name = ?,`;
         value.push(name);
     }
     if (idmunicipality) {
-        query += ` idmunicipality=?,`;
+        query += ` idmunicipality = ?,`;
         value.push(idmunicipality);
+    }
+
+    if (idautor !== undefined) {
+        query += "idautorUpd = ? ";
+        values.push(idautor);
     }
 
     // Elimina la coma final y agrega la condición WHERE

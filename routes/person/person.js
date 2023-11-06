@@ -29,7 +29,8 @@ router.get("/getLazy", async (req, res) => {
     } else {
       res.send({ items: persons, totalRecords: total });
     }
-  } catch (err) {
+  }catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
 });
@@ -46,7 +47,7 @@ router.get("/getById/:id", async (req, res) => {
 });
 
 router.post("/post", async (req, res) => {
-  const { idlocation, name, lastname, ci, phone, email } = req.body;
+  const { idlocation, name, lastname, ci, phone, email, idautor } = req.body;
 
   try {
     const duplicateCheckQuery = await checkDuplicatePerson(ci, phone, email);
@@ -55,20 +56,20 @@ router.post("/post", async (req, res) => {
     if (duplicateCheckResult.length > 0) {
       res.status(400).send({ message: msj.duplicatedUser });
     } else {
-      const insertQuery = insertPerson(idlocation, name, lastname, ci, phone, email);
+      const insertQuery = insertPerson(idlocation, name, lastname, ci, phone, email, idautor);
       await queryDatabase(insertQuery.query, insertQuery.values);
       res.status(200).send({ message: msj.successPost });
 
     }
-  } catch (err) {
+  }catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
 });
 
 router.put("/update/:id", async (req, res) => {
   const id = req.params.id;
-  const { idlocation, name, lastname, ci, phone, email } = req.body;
-
+  const { idlocation, name, lastname, ci, phone, email, idautor } = req.body;
   try {
     const duplicateCheckQuery = checkDuplicatePersonUpdate(ci, phone, email, id);
     const duplicateCheckResult = await queryDatabase(duplicateCheckQuery.query, duplicateCheckQuery.values);
@@ -78,7 +79,7 @@ router.put("/update/:id", async (req, res) => {
       return;
     }
 
-    const updateQuery = updatePerson(id, idlocation, name, lastname, ci, phone, email);
+    const updateQuery = updatePerson(id, idlocation, name, lastname, ci, phone, email, idautor);
     await queryDatabase(updateQuery.query, updateQuery.values);
     res.status(200).send({ message: msj.successPut });
   } catch (err) {
@@ -99,7 +100,8 @@ router.delete("/delete/:id", async (req, res) => {
     } else {
       res.status(200).send({ message: msj.successDelete });
     }
-  } catch (err) {
+  }catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
 });

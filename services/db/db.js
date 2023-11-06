@@ -1,8 +1,6 @@
 const mysql = require("mysql2");
 const mysqlPromise = require("mysql2/promise");
 require('dotenv').config();
-console.log(process.env.DB_HOSTCOOLIFYP); // Verifica las variables de entorno
-
 
 const connection = mysql.createConnection({
   host: process.env.DB_HOSTCOOLIFYP,

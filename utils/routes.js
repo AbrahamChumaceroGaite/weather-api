@@ -4,6 +4,7 @@ const department = require('../routes/department/department');
 const province = require('../routes/province/province');
 const municipality = require('../routes/municipality/municipality');
 const community = require('../routes/community/community');
+const notification = require('../routes/notifications/notifications')
 const locations = require('../routes/location/location');
 const client = require('../routes/client/client');
 const person = require('../routes/person/person');
@@ -17,6 +18,7 @@ module.exports = {
     department,
     province,
     municipality,
+    notification,
     community,
     locations,
     client,

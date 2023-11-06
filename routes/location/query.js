@@ -54,17 +54,17 @@ function getLocationById(id) {
     };
 }
 
-function insertLocation(idcommunity, name) {
+function insertLocation(idcommunity, name, idautor) {
     return {
         query: `
-        INSERT INTO location (idcommunity, name)
-        VALUES (?, ?)
+        INSERT INTO location (idcommunity, name, idautor)
+        VALUES (?, ?, ?)
       `,
-        values: [idcommunity, name],
+        values: [idcommunity, name, idautor],
     };
 }
 
-function updateLocation(id, name, idcommunity) {
+function updateLocation(id, name, idcommunity, idautor) {
     let query = "UPDATE location SET";
     const values = [];
 
@@ -76,6 +76,11 @@ function updateLocation(id, name, idcommunity) {
     if (idcommunity) {
         query += " idcommunity = ?,";
         values.push(idcommunity);
+    }
+    
+    if (idautor !== undefined) {
+        query += "idautorUpd = ? ";
+        values.push(idautor);
     }
 
     // Elimina la coma final y agrega la condición WHERE

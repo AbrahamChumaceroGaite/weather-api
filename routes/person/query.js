@@ -29,43 +29,48 @@ function getPersonById(id) {
     };
 }
 
-function insertPerson(idlocation, name, lastname, ci, phone, email) {
+function insertPerson(idlocation, name, lastname, ci, phone, email, idautor) {
     return {
-        query: "INSERT INTO person (idlocation, name, lastname, ci, phone, email) VALUES (?, ?, ?, ?, ?, ?)",
-        values: [idlocation, name, lastname, ci, phone, email],
+        query: "INSERT INTO person (idlocation, name, lastname, ci, phone, email, idautor) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        values: [idlocation, name, lastname, ci, phone, email, idautor],
     };
 }
 
-function updatePerson(id, idlocation, name, lastname, ci, phone, email) {
-    let query = "UPDATE person SET";
+function updatePerson(id, idlocation, name, lastname, ci, phone, email, idautor) {
+    let query = "UPDATE person SET ";
     const values = [];
 
-    if (idlocation) {
-        query += " idlocation = ?,";
+    if (idlocation !== undefined) {
+        query += "idlocation = ?, ";
         values.push(idlocation);
     }
-    if (name) {
-        query += " name = ?,";
+    if (name !== undefined) {
+        query += "name = ?, ";
         values.push(name);
     }
-    if (lastname) {
-        query += " lastname = ?,";
+    if (lastname !== undefined) {
+        query += "lastname = ?, ";
         values.push(lastname);
     }
-    if (ci) {
-        query += " ci = ?,";
+    if (ci !== undefined) {
+        query += "ci = ?, ";
         values.push(ci);
     }
-    if (phone) {
-        query += " phone = ?,";
+    if (phone !== undefined) {
+        query += "phone = ?, ";
         values.push(phone);
     }
-    if (email) {
-        query += " email = ?,";
+    if (email !== undefined) {
+        query += "email = ?, ";
         values.push(email);
     }
+    
+    if (idautor !== undefined) {
+        query += "idautorUpd = ? ";
+        values.push(idautor);
+    }
 
-    // Remove the trailing comma and add the WHERE condition
+    // Eliminar la coma y el espacio en blanco finales
     query = query.slice(0, -1);
     query += " WHERE id = ?";
     values.push(id);
@@ -75,6 +80,7 @@ function updatePerson(id, idlocation, name, lastname, ci, phone, email) {
         values,
     };
 }
+
 
 function deletePerson(id) {
     return {

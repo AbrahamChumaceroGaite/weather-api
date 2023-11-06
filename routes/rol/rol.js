@@ -8,7 +8,8 @@ router.get("/get", async (req, res) => {
   try {
     const results = await queryDatabase(getRoles());
     res.send(results);
-  } catch (err) {
+  }catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
 });
@@ -25,7 +26,8 @@ router.post("/post", async (req, res) => {
       const results = await queryDatabase(postRole(rol));
       res.send(results);
     }
-  } catch (err) {
+  }catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
 });
@@ -43,7 +45,8 @@ router.put("/update/:id", async (req, res) => {
       const results = await queryDatabase(updateRole(id, rol));
       res.send(results);
     }
-  } catch (err) {
+  }catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
 });
@@ -60,7 +63,8 @@ router.delete("/delete/:id", async (req, res) => {
     } else {
       res.status(200).send({ message: msj.successDelete });
     }
-  } catch (err) {
+  }catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
 });

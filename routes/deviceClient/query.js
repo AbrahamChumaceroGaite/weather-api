@@ -25,17 +25,15 @@ function checkDuplicateDeviceClient(idclient, idevice) {
     };
 }
 
-function insertDeviceClient(idclient, idevice) {
+function insertDeviceClient(idclient, idevice, idautor) {
     return {
-        query: `
-        INSERT INTO device_client (idclient, idevice)
-        VALUES (?, ?)
+        query: ` INSERT INTO device_client (idclient, idevice, idautor)  VALUES (?, ?, ?)
       `,
-        values: [idclient, idevice],
+        values: [idclient, idevice, idautor],
     };
 }
 
-function updateDeviceClient(id, idclient, idevice) {
+function updateDeviceClient(id, idclient, idevice, idautor) {
     let query = "UPDATE device_client SET";
     const values = [];
 
@@ -45,8 +43,13 @@ function updateDeviceClient(id, idclient, idevice) {
     }
 
     if (idevice !== undefined) {
-        query += ` idevice = ? `;
+        query += ` idevice = ?, `;
         values.push(idevice);
+    }
+
+    if (idautor !== undefined) {
+        query += "idautorUpd = ? ";
+        values.push(idautor);
     }
 
     // Elimina la coma final y agrega la condición WHERE

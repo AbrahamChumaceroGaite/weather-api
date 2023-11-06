@@ -33,20 +33,25 @@ function getClientById(id) {
     WHERE c.id = ${id} AND c.deleted = 0`;
 }
 
-function insertClient(idperson) {
+function insertClient(idperson, idautor) {
     return {
-        query: "INSERT INTO client (idperson) VALUES (?)",
-        values: [idperson],
+        query: "INSERT INTO client (idperson, idautor) VALUES (?, ?)",
+        values: [idperson, idautor],
     };
 }
 
-function updateClient(id, idperson) {
+function updateClient(id, idperson, idautor) {
     let query = "UPDATE client SET";
     const values = [];
 
     if (idperson) {
         query += " idperson = ?,";
         values.push(idperson);
+    }
+
+    if (idautor !== undefined) {
+        query += "idautorUpd = ? ";
+        values.push(idautor);
     }
 
     query = query.slice(0, -1);

@@ -60,14 +60,14 @@ function checkDuplicateProvince(name, iddepartment, id = null) {
   };
 }
 
-function insertProvince(iddepartment, name) {
+function insertProvince(iddepartment, name, idautor) {
   return {
-    query: `INSERT INTO province (iddepartment, name) VALUES (?, ?)`,
-    values: [iddepartment, name],
+    query: `INSERT INTO province (iddepartment, name, idautor) VALUES (?, ?, ?)`,
+    values: [iddepartment, name, idautor],
   };
 }
 
-function updateProvince(id, name, iddepartment) {
+function updateProvince(id, name, iddepartment, idautor) {
   const values = [];
   let query = "UPDATE province SET ";
 
@@ -79,6 +79,11 @@ function updateProvince(id, name, iddepartment) {
   if (iddepartment) {
     query += ` iddepartment = ?,`;
     values.push(iddepartment);
+  }
+
+  if (idautor) {
+    query += " idautorUpd = ? ";
+    values.push(idautor);
   }
 
   // Elimina la coma final y agrega la condición WHERE

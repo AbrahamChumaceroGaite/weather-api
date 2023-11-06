@@ -2,20 +2,25 @@ function getRoles() {
     return "SELECT * FROM rol";
 }
 
-function postRole(rol) {
+function postRole(rol, idautor) {
     return {
-        query: "INSERT INTO rol (rol) VALUES (?)",
-        values: [rol]
+        query: "INSERT INTO rol (rol, idautor) VALUES (?, ?)",
+        values: [rol, idautor]
     };
 }
 
-function updateRole(id, rol) {
+function updateRole(id, rol, idautor) {
     let query = "UPDATE rol SET";
     const values = [];
 
     if (rol) {
-        query += " rol = ? ";
+        query += " rol = ?, ";
         values.push(rol);
+    }
+
+   if (idautor !== undefined) {
+        query += "idautorUpd = ? ";
+        values.push(idautor);
     }
 
     // Remove the trailing comma and add the WHERE condition

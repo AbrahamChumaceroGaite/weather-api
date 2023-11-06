@@ -13,7 +13,8 @@ router.get("/get", async (req, res) => {
     } else {
       res.status(404).send({ message: msj.notFound });
     }
-  } catch (err) {
+  }catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
 });
@@ -33,7 +34,8 @@ router.get("/getLazy", async (req, res) => {
     } else {
       res.send({ items: communities, totalRecords: total });
     }
-  } catch (err) {
+  }catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
 });
@@ -48,7 +50,8 @@ router.get("/getById/:id", async (req, res) => {
     } else {
       res.status(404).send({ message: msj.notFound });
     }
-  } catch (err) {
+  }catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
 });
@@ -63,13 +66,14 @@ router.get("/getByDept/:id", async (req, res) => {
     } else {
       res.status(404).send({ message: msj.notFound });
     }
-  } catch (err) {
+  }catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
 });
 
 router.post("/post", async (req, res) => {
-  const { iddepartment, name } = req.body;
+  const { iddepartment, name, idautor } = req.body;
 
   try {
     const duplicateCheckQuery = checkDuplicateProvince(name, iddepartment);
@@ -78,19 +82,20 @@ router.post("/post", async (req, res) => {
     if (duplicateCheckResult.length > 0) {
       res.status(400).send({ message: msj.duplicatedProvince });
     } else {
-      const insertQuery = insertProvince(iddepartment, name);
+      const insertQuery = insertProvince(iddepartment, name, idautor);
       await queryDatabase(insertQuery.query, insertQuery.values);
       res.status(200).send({ message: msj.successPost });
 
     }
-  } catch (err) {
+  }catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
 });
 
 router.put("/update/:id", async (req, res) => {
   const id = req.params.id;
-  const { name, iddepartment } = req.body;
+  const { name, iddepartment, idautor } = req.body;
 
   try {
     const duplicateCheckQuery = await checkDuplicateProvince(name, iddepartment, id);
@@ -101,7 +106,7 @@ router.put("/update/:id", async (req, res) => {
       return;
     }
 
-    const updateQuery = updateProvince(id, name, iddepartment);
+    const updateQuery = updateProvince(id, name, iddepartment, idautor);
     await queryDatabase(updateQuery.query, updateQuery.values);
     res.status(200).send({ message: msj.successPut });
   } catch (err) {
@@ -122,7 +127,8 @@ router.delete("/delete/:id", async (req, res) => {
     } else {
       res.status(200).send({ message: msj.successDelete });
     }
-  } catch (err) {
+  }catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
 });

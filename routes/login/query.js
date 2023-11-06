@@ -7,7 +7,7 @@ function comparePassword(contrasena, hash) {
 
 function getUser(ci) {
     return {
-        query: `SELECT ur.id, p.name, p.ci, ur.pass, r.id as idrol, r.rol FROM person p
+        query: `SELECT ur.id, p.name, p.ci, ur.pass, r.rol FROM person p
         JOIN user u ON p.id = u.idperson
         JOIN user_rol ur ON u.id = ur.iduser
         JOIN rol r ON ur.idrol = r.id WHERE ci = ?`,
@@ -18,8 +18,7 @@ function getUser(ci) {
 function generateAuthToken(user) {
     const payload = {
         name: user.nombre,
-        userId: user.id,
-        roleId: user.idrol,
+        userId: user.id
     };
 
     const options = {

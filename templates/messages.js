@@ -9,6 +9,7 @@ module.exports = {
     duplicatedCI: 'Este CI ya existe',
     duplicatedCommunity: 'Esta comunidad ya existe',
     duplicatedDepartment: 'Esta departamento ya existe',
+    duplicatedDevice: 'Esta estación ya existe',
     duplicatedDeviceClient: 'Este usuario ya tiene asignado este dispositivo',
     duplicatedLocation: 'Esta ubicación ya existe',
     duplicatedMunicipality: 'Este municipio ya existe',

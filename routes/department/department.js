@@ -14,7 +14,8 @@ router.get("/get", async (req, res) => {
     } else {
       res.send(departments);
     }
-  } catch (err) {
+  }catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
 });
@@ -63,13 +64,14 @@ router.get("/getById/:id", async (req, res) => {
     } else {
       res.send(department);
     }
-  } catch (err) {
+  }catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
 });
 
 router.post("/post", async (req, res) => {
-  const name = req.body.name;
+  const {name, idautor} = req.body;
 
   try {
     // Verificar si el departamento ya existe en la base de datos
@@ -78,7 +80,7 @@ router.post("/post", async (req, res) => {
     if (existingDepartments.length > 0) {
       res.status(400).send({ message: msj.duplicatedDepartment });
     } else {
-      const { query, value } = postDepartment(name);
+      const { query, value } = postDepartment(name, idautor);
       const result = await queryDatabase(query, value);
 
       if (result.affectedRows === 1) {
@@ -87,14 +89,15 @@ router.post("/post", async (req, res) => {
         res.status(500).send({ message: msj.errorQuery });
       }
     }
-  } catch (err) {
+  }catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
 });
 
 router.put("/update/:id", async (req, res) => {
   const id = req.params.id;
-  const name = req.body.name;
+  const {name, idautor} = req.body;
 
   try {
     // Verificar si el departamento ya existe en la base de datos
@@ -103,7 +106,7 @@ router.put("/update/:id", async (req, res) => {
     if (existingDepartments.length > 0) {
       res.status(400).send({ message: msj.duplicatedDepartment });
     } else {
-      const { query, value } = updateDepartment(id, name);
+      const { query, value } = updateDepartment(id, name, idautor);
       const result = await queryDatabase(query, value);
 
       if (result.affectedRows === 1) {
@@ -112,7 +115,8 @@ router.put("/update/:id", async (req, res) => {
         res.status(500).send({ message: msj.errorQuery });
       }
     }
-  } catch (err) {
+  }catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
 });
@@ -129,7 +133,8 @@ router.delete("/delete/:id", async (req, res) => {
     } else {
       res.status(404).send({ message: msj.notFound });
     }
-  } catch (err) {
+  }catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
 });

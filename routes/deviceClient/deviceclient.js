@@ -13,7 +13,8 @@ router.get("/get", async (req, res) => {
     } else {
       res.send(results);
     }
-  } catch (err) {
+  }catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
 });
@@ -30,13 +31,14 @@ router.get("/getById/:id", async (req, res) => {
     } else {
       res.send(results);
     }
-  } catch (err) {
+  }catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
 });
 
 router.post("/post", async (req, res) => {
-  const {idclient, idevice} = req.body
+  const {idclient, idevice, idautor} = req.body
   try {
     // Verificar si ya existe la combinación idclient e idevice
     const { query, values }  = await checkDuplicateDeviceClient(idclient, idevice);
@@ -46,7 +48,7 @@ router.post("/post", async (req, res) => {
       res.status(400).send({ message: msj.duplicatedDeviceClient });
     } else {
   
-      const { query, values }  = await insertDeviceClient(idclient, idevice);
+      const { query, values }  = await insertDeviceClient(idclient, idevice, idautor);
       const insertResult = await queryDatabase(query, values );
 
       if (insertResult.affectedRows === 1) {
@@ -63,7 +65,7 @@ router.post("/post", async (req, res) => {
 
 router.put("/update/:id", async (req, res) => {
   const id = req.params.id;
-  const {idclient, idevice} = req.body
+  const {idclient, idevice, idautor} = req.body
   try {
     
     const { query, values } = await checkDuplicateDeviceClient(idclient, idevice);    
@@ -73,7 +75,7 @@ router.put("/update/:id", async (req, res) => {
       res.status(400).send({ message: msj.duplicatedEntry });
     } else {
       // Actualizar los campos específicos
-      const { query, values }  = await updateDeviceClient(id, idclient, idevice);
+      const { query, values }  = await updateDeviceClient(id, idclient, idevice, idautor);
       const updateResult = await queryDatabase(query, values);
 
       if (updateResult.affectedRows === 1) {
@@ -100,7 +102,8 @@ router.delete("/delete/:id", async (req, res) => {
     } else {
       res.status(500).send({ message: msj.errorQuery });
     }
-  } catch (err) {
+  }catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
 });

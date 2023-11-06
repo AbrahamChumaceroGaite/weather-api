@@ -40,14 +40,15 @@ router.get("/getById/:id", async (req, res) => {
   try {
     const results = await queryDatabase(getClientById(id))
     res.send(results);
-  } catch (err) {
+  }catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
 });
 
 router.post("/post", async (req, res) => {
-  const { idperson } = req.body;
-
+  const { idperson, idautor } = req.body;
+  console.log(req.body)
   try {
     const duplicateCheckQuery = await checkDuplicateClient(idperson);
     const duplicateCheckResult = await queryDatabase(duplicateCheckQuery.query, duplicateCheckQuery.values);
@@ -55,18 +56,19 @@ router.post("/post", async (req, res) => {
     if (duplicateCheckResult.length > 0) {
       res.status(400).send({ message: msj.duplicatedUser });
     } else {
-      const insertQuery = await insertClient(idperson);
+      const insertQuery = await insertClient(idperson, idautor);
       await queryDatabase(insertQuery.query, insertQuery.values);
       res.status(200).send({ message: msj.successPost });
     }
-  } catch (err) {
+  }catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
 });
 
 router.put("/update/:id", async (req, res) => {
   const id = req.params.id;
-  const { idperson } = req.body;
+  const { idperson, idautor } = req.body;
 
   try {
     const duplicateCheckQuery = await checkDuplicateClientUpdate(idperson, id);
@@ -77,7 +79,7 @@ router.put("/update/:id", async (req, res) => {
       return;
     }
 
-    const updateQuery = updateClient(id, idperson);
+    const updateQuery = updateClient(id, idperson, idautor);
     await queryDatabase(updateQuery.query, updateQuery.values);
     res.status(200).send({ message: msj.successPut });
   } catch (err) {
@@ -98,7 +100,8 @@ router.delete("/delete/:id", async (req, res) => {
     } else {
       res.status(200).send({ message: msj.successDelete });
     }
-  } catch (err) {
+  }catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
 });

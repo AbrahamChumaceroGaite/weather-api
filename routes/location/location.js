@@ -10,7 +10,8 @@ router.get("/get", async (req, res) => {
     const results = await queryDatabase(query);
 
     res.send(results);
-  } catch (err) {
+  }catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
 });
@@ -49,13 +50,14 @@ router.get("/getById/:id", async (req, res) => {
     } else {
       res.status(404).send({ message: msj.notFound });
     }
-  } catch (err) {
+  }catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
 });
 
 router.post("/post", async (req, res) => {
-  const { idcommunity, name } = req.body;
+  const { idcommunity, name, idautor } = req.body;
 
   try {
     const duplicateCheckQuery = checkDuplicateLocation(name, idcommunity);
@@ -64,18 +66,19 @@ router.post("/post", async (req, res) => {
     if (duplicateCheckResult.length > 0) {
       res.status(400).send({ message: msj.duplicatedLocation });
     } else {
-      const insertQuery = insertLocation(idcommunity, name);
+      const insertQuery = insertLocation(idcommunity, name, idautor);
       await queryDatabase(insertQuery.query, insertQuery.values);
       res.status(200).send({ message: msj.successPost });
     }
-  } catch (err) {
+  }catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
 });
 
 router.put("/update/:id", async (req, res) => {
   const id = req.params.id;
-  const { name, idcommunity } = req.body;
+  const { name, idcommunity, idautor } = req.body;
 
   try {
     const duplicateCheckQuery = checkDuplicateLocation(name, idcommunity, id);
@@ -86,10 +89,11 @@ router.put("/update/:id", async (req, res) => {
       return;
     }
 
-    const updateQuery = updateLocation(id, name, idcommunity);
+    const updateQuery = updateLocation(id, name, idcommunity, idautor);
     await queryDatabase(updateQuery.query, updateQuery.values);
     res.status(200).send({ message: msj.successPut });
-  } catch (err) {
+  }catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
 });
@@ -106,7 +110,8 @@ router.delete("/delete/:id", async (req, res) => {
     } else {
       res.status(200).send({ message: msj.successDelete });
     }
-  } catch (err) {
+  }catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
 });

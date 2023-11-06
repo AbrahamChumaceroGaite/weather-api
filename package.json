@@ -2,17 +2,18 @@
   "name": "weatherapi",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js",
+    "start": "node app.js",
     "build": "",
-    "dev": "nodemon index.js"
+    "dev": "nodemon app.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/socket.io": "^3.0.2",
     "bcrypt": "^5.1.0",
     "body-parser": "^1.19.0",
     "connect-multiparty": "^2.2.0",
@@ -30,6 +31,6 @@
     "socket.io": "^4.7.2"
   },
   "bin": {
-    "ApiWeather": "./index.js"
+    "ApiWeather": "./app.js"
   }
 }

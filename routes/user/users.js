@@ -10,7 +10,8 @@ router.get("/get", async (req, res) => {
   try {
     const results = await queryDatabase(getUsers())
     res.send(results);
-  } catch (err) {
+  }catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
 });
@@ -30,7 +31,8 @@ router.get("/getLazy", async (req, res) => {
     } else {
       res.send({ items: persons, totalRecords: total });
     }
-  } catch (err) {
+  }catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
 });
@@ -40,15 +42,15 @@ router.get("/getById/:id", async (req, res) => {
   console.log(id)
   try {
     const results = await queryDatabase(getUserById(id))
-    console.log(results)
     res.send(results);
   } catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
 });
 
 router.post("/post", async (req, res) => {
-  const { idperson, idrol, pass } = req.body;
+  const { idperson, idrol, pass, idautor } = req.body;
   let connection;
   try {
     connection = await connectionPromise;
@@ -60,7 +62,7 @@ router.post("/post", async (req, res) => {
     if (duplicateCheckResult.length > 0) {
       res.status(400).send({ message: msj.duplicatedUser });
     } else {
-      const insertQuery = insertUser(idperson);
+      const insertQuery = await insertUser(idperson, idautor);
       const result = await queryDatabasePromise(connection, insertQuery.query, insertQuery.values);
       const userId = result.insertId;
 
@@ -74,51 +76,8 @@ router.post("/post", async (req, res) => {
       if (duplicateCheckRolResult.length > 0) {
         res.status(400).send({ message: msj.duplicatedUser });
       } else {
-        const hashedPassword = bcrypt.hashSync(pass, 10);
-        const insertRolQuery = await insertUserRol(userId, idrol, hashedPassword);
-        await queryDatabasePromise(connection, insertRolQuery.query, insertRolQuery.values);
-        await connection.commit(); // Confirmar la transacción para insertar el rol del usuario
-        res.status(200).send({ message: msj.successPost });
-      }
-    }
-  } catch (err) {
-    if (connection) {
-      await connection.rollback(); // Revertir la transacción en caso de error
-      res.status(500).send({ message: msj.errorQuery });
-    }
-    res.status(500).send({ message: msj.errorQuery });
-  }
-});
-
-router.put("/post", async (req, res) => {
-  const id = req.params.id;
-  const { idperson, idrol, pass } = req.body;
-  let connection;
-  try {
-    connection = await connectionPromise;
-    await connection.beginTransaction();
-
-    const duplicateCheckQuery = await checkDuplicateUserUpdate(idperson, id);
-    const duplicateCheckResult = await queryDatabasePromise(connection, duplicateCheckQuery.query, duplicateCheckQuery.values);
-
-    if (duplicateCheckResult.length > 0) {
-      res.status(400).send({ message: msj.duplicatedUser });
-    } else {
-      const insertQuery = updateUser(idperson);
-      const result = await queryDatabasePromise(connection, insertQuery.query, insertQuery.values);
-    
-      await connection.commit(); // Confirmar la transacción para insertar el usuario
-
-      connection.beginTransaction(); // Iniciar una nueva transacción
-
-      const duplicateCheckRolQuery = await checkDuplicateUserRolUpdate(userId, idrol);
-      const duplicateCheckRolResult = await queryDatabasePromise(connection, duplicateCheckRolQuery.query, duplicateCheckRolQuery.values);
-
-      if (duplicateCheckRolResult.length > 0) {
-        res.status(400).send({ message: msj.duplicatedUser });
-      } else {
-        const hashedPassword = bcrypt.hashSync(pass, 10);
-        const insertRolQuery = await insertUserRol(id, userId, idrol, hashedPassword);
+        const hashedPassword = await bcrypt.hashSync(pass, 10);
+        const insertRolQuery = await insertUserRol(userId, idrol, hashedPassword, idautor);
         await queryDatabasePromise(connection, insertRolQuery.query, insertRolQuery.values);
         await connection.commit(); // Confirmar la transacción para insertar el rol del usuario
         res.status(200).send({ message: msj.successPost });
@@ -135,7 +94,7 @@ router.put("/post", async (req, res) => {
 
 router.put("/update/:id", async (req, res) => {
   const id = req.params.id;
-  const { idperson } = req.body;
+  const { idperson, idautor} = req.body;
 
   try {
     const duplicateCheckQuery = await checkDuplicateUserUpdate(idperson, id);
@@ -146,7 +105,7 @@ router.put("/update/:id", async (req, res) => {
       return;
     }
 
-    const updateQuery = updateUser(id, idperson);
+    const updateQuery = updateUser(id, idperson, idautor);
     await queryDatabase(updateQuery.query, updateQuery.values);
     res.status(200).send({ message: msj.successPut });
   } catch (err) {
@@ -157,8 +116,7 @@ router.put("/update/:id", async (req, res) => {
 
 router.put("/update/rol/:id", async (req, res) => {
   const id = req.params.id;
-  const { iduser, idrol, pass } = req.body;
-  console.log(req.body)
+  const { iduser, idrol, pass, idautor } = req.body;
   let hashedPassword;
   try {
     const duplicateCheckQuery = await checkDuplicateUserRolUpdate(iduser, id);
@@ -172,7 +130,7 @@ router.put("/update/rol/:id", async (req, res) => {
       hashedPassword = bcrypt.hashSync(pass, 10);
     }
     
-    const updateQuery = updateUserRol(id, iduser, idrol, hashedPassword);
+    const updateQuery = updateUserRol(id, iduser, idrol, hashedPassword, idautor);
     await queryDatabase(updateQuery.query, updateQuery.values);
     res.status(200).send({ message: msj.successPut });
   } catch (err) {
@@ -193,7 +151,8 @@ router.delete("/delete/:id", async (req, res) => {
     } else {
       res.status(200).send({ message: msj.successDelete });
     }
-  } catch (err) {
+  }catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
 });

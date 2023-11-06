@@ -52,33 +52,42 @@ function getDeviceIdentityById(id) {
   }
 }
 
-function insertDeviceIdentity(idlocation, name, status) {
+function checkExistingIdentity(name) {
   return {
-    query: `
-        INSERT INTO device (idlocation, name, status)
-        VALUES (?, ?, ?)
-      `,
-    values: [idlocation, name, status],
+      queryCheck: "SELECT * FROM device WHERE name = ? AND deleted = 0",
+      valueCheck: [name],
   };
 }
 
-function updateDeviceIdentity(id, name, idlocation, status) {
+function insertDeviceIdentity(name, idlocation, status, idautor) {
+  return {
+    query: `INSERT INTO device (name, idlocation, status, idautor) VALUES (?, ?, ?, ?)`,
+    values: [name, idlocation, status, idautor],
+  };
+}
+
+function updateDeviceIdentity(id, name, idlocation, status, idautor) {
   let query = "UPDATE device SET";
   const values = [];
-
-  if (name !== undefined) {
-    query += ` name = ?,`;
-    values.push(name);
-  }
 
   if (idlocation !== undefined) {
     query += ` idlocation = ?,`;
     values.push(idlocation);
   }
 
+  if (name !== undefined) {
+    query += ` name = ?,`;
+    values.push(name);
+  }
+
   if (status !== undefined) {
-    query += ` status = ? `;
+    query += ` status = ?, `;
     values.push(status);
+  }
+
+  if (idautor) {
+    query += ` idautorUpd = ? `;
+    values.push(idautor);
   }
 
   // Elimina la coma final y agrega la condición WHERE
@@ -100,6 +109,7 @@ function deleteDeviceIdentity(id) {
 }
 
 module.exports = {
+  checkExistingIdentity,
   getDevicesIdentity,
   getTotalRecords,
   getLazy,

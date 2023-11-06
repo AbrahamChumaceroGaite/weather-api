@@ -4,7 +4,7 @@ const verifyToken = require('../../middleware/middleware');
 const { queryDatabase } = require("../../services/db/query");
 const msj = require("../../templates/messages");
 const { getData, getDataLast,  getDeviceIdLocation, insertDeviceData, deleteDevice } = require("./query-device");
-const { getDevicesIdentity, getLazy, getTotalRecords, getDeviceIdentityById, getUnusedDeviceIdentities, insertDeviceIdentity, updateDeviceIdentity, deleteDeviceIdentity } = require("./query-identity");
+const { checkExistingIdentity, getDevicesIdentity, getLazy, getTotalRecords, getDeviceIdentityById, getUnusedDeviceIdentities, insertDeviceIdentity, updateDeviceIdentity, deleteDeviceIdentity } = require("./query-identity");
 
 router.get("/get/list/last", verifyToken, async (req, res) => {
   const id = req.query.idevice;
@@ -17,7 +17,8 @@ router.get("/get/list/last", verifyToken, async (req, res) => {
     } else {
       res.send(deviceLast);
     }
-  } catch (err) {
+  }catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
 });
@@ -33,7 +34,8 @@ router.get('/get/list/data', verifyToken, async (req, res) => {
     } else {     
       res.send(deviceData);
     }
-  } catch (err) {
+  }catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
 });
@@ -41,7 +43,7 @@ router.get('/get/list/data', verifyToken, async (req, res) => {
 router.post("/post", async (req, res) => {
   try {
     const data = req.body;
-    const idDevice = data.iddevice;
+    const {idDevice, idautor} = data;
     const { querylocation, valueslocation } = await getDeviceIdLocation(idDevice);
     const resultL = await queryDatabase(querylocation, valueslocation);
     if (resultL.length === 0) {
@@ -100,7 +102,8 @@ router.delete("/delete/:id", verifyToken, async (req, res) => {
     } else {
       res.status(404).send({ message: msj.notFound });
     }
-  } catch (err) {
+  }catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
 });
@@ -117,7 +120,8 @@ router.get("/get/identity", verifyToken, async (req, res) => {
     } else {
       res.send(results);
     }
-  } catch (err) {
+  }catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
 });
@@ -132,7 +136,8 @@ router.get("/get/identity/list", verifyToken, async (req, res) => {
     } else {
       res.send(results);
     }
-  } catch (err) {
+  }catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
 });
@@ -170,44 +175,64 @@ router.get("/get/identity/ById/:id", verifyToken, async (req, res) => {
     } else {
       res.send(results);
     }
-  } catch (err) {
+  }catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
 });
 
 router.post("/post/identity", verifyToken, async (req, res) => {
-  const { name, idlocation, status } = req.body;
-
+  const { name, idlocation, status, idautor} = req.body;
+  console.log(req.body)
   try {
-    const { query, values } = await insertDeviceIdentity(idlocation, name, status);
-    const result = await queryDatabase(query, values);
+    const {queryCheck, valueCheck} = await checkExistingIdentity(name)
+    const existingDevice = await queryDatabase(queryCheck, valueCheck);
 
-    if (result.affectedRows === 1) {
-      res.status(200).send({ message: msj.successPost });
+    if (existingDevice.length > 0) {
+      res.status(400).send({ message: msj.duplicatedDevice });
     } else {
-      res.status(500).send({ message: msj.errorQuery });
+      console.log("paso2")
+      const { query, values } = insertDeviceIdentity(name, idlocation, status, idautor);
+      const result = await queryDatabase(query, values);
+
+      if (result.affectedRows === 1) {
+        res.status(201).send({ message: msj.successPost });
+      } else {
+        res.status(500).send({ message: msj.errorQuery });
+      }
     }
-  } catch (err) {
+  }catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
 });
 
 router.put("/update/identity/:id", verifyToken, async (req, res) => {
   const id = req.params.id;
-  const { name, idlocation, status } = req.body;
+  const { idlocation,name, status, idautor } = req.body;
 
+  console.log(req.body)
   try {
-    const { query, values } = updateDeviceIdentity(id, name, idlocation, status);
-    const result = await queryDatabase(query, values);
+    const {queryCheck, valueCheck} = await checkExistingIdentity(name)
+    const existingDevice = await queryDatabase(queryCheck, valueCheck);
 
-    if (result.affectedRows === 1) {
-      res.status(200).send({ message: msj.successPut });
+    if (existingDevice.length > 0) {
+      res.status(400).send({ message: msj.duplicatedDevice });
     } else {
-      res.status(500).send({ message: msj.errorQuery });
+      const { query, values } = updateDeviceIdentity(id, name, idlocation, status, idautor);
+      const result = await queryDatabase(query, values);
+
+      if (result.affectedRows === 1) {
+        res.status(201).send({ message: msj.successPut });
+      } else {
+        res.status(500).send({ message: msj.errorQuery });
+      }
     }
-  } catch (err) {
+  }catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
+
 });
 
 router.delete("/delete/identity/:id", verifyToken, async (req, res) => {
@@ -222,7 +247,8 @@ router.delete("/delete/identity/:id", verifyToken, async (req, res) => {
     } else {
       res.status(404).send({ message: msj.notFound });
     }
-  } catch (err) {
+  }catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
 });

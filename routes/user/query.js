@@ -38,30 +38,35 @@ function getUserById(id) {
     JOIN person p ON u.idperson = p.id
     JOIN user_rol ur ON u.id = ur.iduser
     JOIN rol r ON ur.idrol = r.id
-    WHERE u.id = ${id} AND u.deleted = 0`;
+    WHERE ur.id = ${id} AND u.deleted = 0`;
 }
 
-function insertUser(idperson) {
+function insertUser(idperson, idautor) {
     return {
-        query: "INSERT INTO user (idperson) VALUES (?)",
-        values: [idperson],
+        query: "INSERT INTO user (idperson, idautor) VALUES (?, ?)",
+        values: [idperson, idautor],
     };
 }
 
-function insertUserRol(iduser, idrol, pass) {
+function insertUserRol(iduser, idrol, pass, idautor) {
     return {
-        query: "INSERT INTO user_rol (iduser, idrol, pass) VALUES (?, ?, ?)",
-        values: [iduser, idrol, pass],
+        query: "INSERT INTO user_rol (iduser, idrol, pass, idautor) VALUES (?, ?, ?, ?)",
+        values: [iduser, idrol, pass, idautor],
     };
 }
 
-function updateUser(id, idperson) {
+function updateUser(id, idperson, idautor) {
     let query = "UPDATE user SET";
     const values = [];
 
     if (idperson) {
-        query += " idperson = ? ";
+        query += " idperson = ?, ";
         values.push(idperson);
+    }
+
+    if (idautor !== undefined) {
+        query += "idautorUpd = ? ";
+        values.push(idautor);
     }
 
     query = query.slice(0, -1);
@@ -74,21 +79,22 @@ function updateUser(id, idperson) {
     };
 }
 
-function updateUserRol(id, iduser, idrol, pass) {
+function updateUserRol(id, iduser, idrol, pass, idautor) {
     let query = "UPDATE user_rol SET";
     const values = [];
 
-    if (iduser) {
-        query += " iduser = ? ";
-        values.push(iduser);
-    }
     if (idrol) {
-        query += ", idrol = ? ";
+        query += " idrol = ?, ";
         values.push(idrol);
     }
     if (pass) {
-        query += ", pass = ? ";
+        query += " pass = ?, ";
         values.push(pass);
+    }
+
+    if (idautor !== undefined) {
+        query += "idautorUpd = ? ";
+        values.push(idautor);
     }
 
     query = query.slice(0, -1);

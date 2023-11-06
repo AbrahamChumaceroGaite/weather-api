@@ -14,7 +14,8 @@ router.get("/get", async (req, res) => {
     } else {
       res.send(communities);
     }
-  } catch (err) {
+  }catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
 });
@@ -52,7 +53,8 @@ router.get("/getById/:id", async (req, res) => {
     } else {
       res.send(community);
     }
-  } catch (err) {
+  }catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
 });
@@ -74,8 +76,8 @@ router.get("/getByDept/:id", async (req, res) => {
 });
 
 router.post("/post", async (req, res) => {
-  const {name, idmunicipality} = req.body;
-
+  const {name, idmunicipality, idautor} = req.body;
+  console.log(req.body)
   try {
     // Verificar si la comunidad ya existe en la base de datos
     const {query, value} = checkExistingCommunity(name, idmunicipality);
@@ -84,7 +86,7 @@ router.post("/post", async (req, res) => {
     if (existingCommunities.length > 0) {
       res.status(400).send({ message: msj.duplicatedCommunity });
     } else {
-      const { query, value } = await postCommunity(name, idmunicipality);
+      const { query, value } = await postCommunity(name, idmunicipality, idautor);
       const result = await queryDatabase(query, value);
 
       if (result.affectedRows === 1) {
@@ -101,7 +103,7 @@ router.post("/post", async (req, res) => {
 
 router.put("/update/:id", async (req, res) => {
   const id = req.params.id;
-  const {name, idmunicipality} = req.body;
+  const {name, idmunicipality, idautor} = req.body;
 
   try {
     // Verificar si la comunidad ya existe en la base de datos
@@ -111,7 +113,7 @@ router.put("/update/:id", async (req, res) => {
     if (existingCommunities.length > 0) {
       res.status(400).send({ message: msj.duplicatedCommunity });
     } else {
-      const { query, value } = await updateCommunity(id, name, idmunicipality);
+      const { query, value } = await updateCommunity(id, name, idmunicipality, idautor);
       const result = await queryDatabase(query, value);
 
       if (result.affectedRows === 1) {
@@ -120,7 +122,8 @@ router.put("/update/:id", async (req, res) => {
         res.status(500).send({ message: msj.errorQuery });
       }
     }
-  } catch (err) {
+  }catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
 });
@@ -137,7 +140,8 @@ router.delete("/delete/:id", async (req, res) => {
     } else {
       res.status(404).send({ message: msj.notFound });
     }
-  } catch (err) {
+  }catch (err) {
+    console.log(err)
     res.status(500).send({ message: msj.errorQuery });
   }
 });
