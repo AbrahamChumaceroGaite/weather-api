@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express();
 const msj = require('../../templates/messages');
-const { susbcribeUser, checkIfExistsUser, insertReport, getSubscriptionUser, getNotificationCode, getNotificacionsUser, getCountNotificacionsUser, getReport, getCountReports, readNotificationUser, MainDashboardUser } = require('./query-user');
+const { susbcribeUser, isAdmin, checkIfExistsUser, insertReport, getSubscriptionUser, getNotificationCode, getNotificacionsUser, getCountNotificacionsUser, getReport, readNotificationUser, MainDashboardUser } = require('./query-user');
 const { susbcribeClient, checkIfExistsClient, getNotificacionsClient, getCountNotificacionsClient, readNotificationClient } = require('./query-client');
 const { queryDatabase } = require('../../services/db/query')
 const verifyToken = require('../../middleware/middleware');
@@ -11,10 +11,7 @@ const { welcomePayloadUser } = require('../../templates/payload');
 
 module.exports = (io) => {
   router.post('/testing', async (req, res) => {
-    const notificationData = req.body;
-
-    io.emit('notification', notificationData);
-    res.json({ mensaje: "A partir de ahora recibirá notificaciones de sus eventos y grupos." });
+    io.to(nameRoom).emit('notification', '');
   });
 
   router.post('/register/subscription/user', verifyToken, async (req, res) => {
@@ -62,11 +59,13 @@ module.exports = (io) => {
     }
   });
 
-  router.get('/get/report', verifyToken, async (req, res) => {
-    const { id, first, rows } = req.query;
-    const startIndex = parseInt(first);
-    const numRows = parseInt(rows);
-    const { querReports, valuesReports } = await getReport(id, startIndex, numRows);
+  router.get('/get/report/user', verifyToken, async (req, res) => {
+    const { id } = req.query;
+    const { queryAdmin, valuesAdmin } = await isAdmin(id);
+    const admin = await queryDatabase(queryAdmin, valuesAdmin);
+    const idAdmin = admin[0].idrol;
+
+    const { querReports, valuesReports } = await getReport(idAdmin);
     try {
       const results = await queryDatabase(querReports, valuesReports).catch(err => console.log(err));
       res.json(results);
@@ -74,29 +73,68 @@ module.exports = (io) => {
 
   });
 
-  router.get('/get/notifitacions', verifyToken, async (req, res) => {
-    const { id, first, rows } = req.query;
-    const startIndex = parseInt(first);
-    const numRows = parseInt(rows);
-    const { queryNotifications, valuesNotificacions } = await getNotificacions(id, startIndex, numRows);
-    const { queryCountNotifications, valuesCountNotificacions } = await getCountNotificacions(id);
+  router.get('/get/notifitacions/user', verifyToken, async (req, res) => {
+    const { id } = req.query;
+    const { queryNotifications, valuesNotificacions } = await getNotificacionsUser(id);
+    const { queryCountNotifications, valuesCountNotificacions } = await getCountNotificacionsUser(id);
     try {
       const results = await queryDatabase(queryNotifications, valuesNotificacions)
       const resultsCount = await queryDatabase(queryCountNotifications, valuesCountNotificacions)
       const countResult = resultsCount[0].totalItems;
       res.json({ items: results, total: countResult });
-    } catch (err) { console.log(err) }
-
-
+    } catch (err) { 
+      console.log(err) 
+    }
   });
 
-  router.put('/update/notificactions/:id', verifyToken, async (req, res) => {
+  router.put('/update/notificactions/user/:id', verifyToken, async (req, res) => {
     const id = req.params.id
     try {
-      const { queryNotifications, valuesNotificacions } = readNotification(id);
+      const { queryNotifications, valuesNotificacions } = readNotificationUser(id);
       const results = await queryDatabase(queryNotifications, valuesNotificacions).catch(err => console.log(err));
       res.json(results);
     } catch (err) { console.log(err) }
+  });
+
+  router.get('/main/admin/dashboard/users', verifyToken, async (req, res) => {
+
+    const { selectClients,selectPersons, selectDeviceON, selectDeviceOFF, selectUsers, selectLocations} = await MainDashboardUser(req.query.id);
+  
+    try {
+      const [
+        resultsUsers,
+        resultPersons,
+        resultsClients,
+        resultsDeviceON,
+        resultsDeviceOFF,
+        resultsLocations
+      ] = await Promise.all([
+        queryDatabase(selectUsers),
+        queryDatabase(selectPersons),
+        queryDatabase(selectClients),
+        queryDatabase(selectDeviceON),
+        queryDatabase(selectDeviceOFF),
+        queryDatabase(selectLocations)
+      ]).catch(err => console.log(err));
+  
+      const totalUsers = resultsUsers[0].total_users;
+      const totalPersons = resultPersons[0].total_persons;
+      const totalDeviceON = resultsDeviceON[0].total_devicesON;
+      const totalDeviceOFF = resultsDeviceOFF[0].total_deviceOFF;
+      const totalClients = resultsClients[0].total_clients;
+      const totalLocations = resultsLocations[0].total_locations;  
+      res.json({
+        totalUsers,
+        totalPersons,
+        totalDeviceON,
+        totalDeviceOFF,
+        totalClients,
+        totalLocations
+      });
+    } catch (err) {
+      console.log(err);
+      res.status(500).json({ mensaje: messages.errorquery });
+    }
   });
 
   return router;

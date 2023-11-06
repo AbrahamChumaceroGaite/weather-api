@@ -24,10 +24,23 @@ function welcomePayloadUser(content) {
     }
 }
 
-
+function newDeviceUser(autor, name, content)
+{
+    return {
+        "notification": {
+            "title": `${autor} ha creado una nueva estación`,
+            "body": content + ' ' + name,
+            "icon": "",
+            "importance": "high",
+            "vibrate": [100, 50, 100],
+            "timestamp": Date.now() + 30 * 60 * 1000,
+        }
+    }
+}
 module.exports = {
     welcomePayload, 
-    welcomePayloadUser
+    welcomePayloadUser,
+    newDeviceUser
 }
 
 
