@@ -41,11 +41,12 @@ module.exports = (io) => {
           const resultsGetMsg = await queryDatabase(queryGetMsg, valuesGetMsg);
           const content = resultsGetMsg[0].message;
           const codemsj = 11
-          const insertReportUser = await insertReport(id, codemsj);
+          const payload = await welcomePayloadUser(content);
+          const insertReportUser = await insertReport(id, codemsj, payload.notification.body);
           const resultInsertReport = await queryDatabase(insertReportUser.queryInsert, insertReportUser.valuesInsert);
 
           if (resultInsertReport.affectedRows === 1) {
-            const payload = await welcomePayloadUser(content);
+            io.to(nameRoom).emit('notification', '');
             await PushNotification(resultsGetUser[0], payload);
           }         
           res.status(201).send({ message: msj.successPost });

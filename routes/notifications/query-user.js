@@ -23,10 +23,10 @@ function checkIfExistsUser(id, endpoint, p256dh, auth) {
     return { queryCheck, valuesCheck }
 }
 
-function insertReport(id, message) {
-    const queryInsert = 'INSERT INTO user_report (iduserRol, idcode_message) VALUES (?,?)'
-    const valuesInsert = [id, message]
-    return { queryInsert, valuesInsert }
+function insertReport(id, message, payload) {
+    const queryInsert = 'INSERT INTO user_report (iduserRol, idcode_message, message) VALUES (?,?,?)'
+    const valuesInsert = [id, message, payload]
+    return { queryInsert, valuesInsert,  }
 
 }
 
