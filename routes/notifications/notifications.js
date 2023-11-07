@@ -46,7 +46,7 @@ module.exports = (io) => {
           const resultInsertReport = await queryDatabase(insertReportUser.queryInsert, insertReportUser.valuesInsert);
 
           if (resultInsertReport.affectedRows === 1) {
-            io.to(nameRoom).emit('notification', '');
+            io.emit('notification', '');
             await PushNotification(resultsGetUser[0], payload);
           }         
           res.status(201).send({ message: msj.successPost });
