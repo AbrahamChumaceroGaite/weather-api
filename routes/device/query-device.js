@@ -15,7 +15,7 @@ function getDataLast(id) {
 }
 
 function getData(id, startDate, endDate) {
-    let query = `SELECT de.name, d.*, DATE_FORMAT(CONVERT_TZ(d.createdAt, '+00:00', '-04:00'), '%Y-%m-%d %H:%i:%s') AS newCreatedAt
+    let query = `SELECT de.name, d.*, CONVERT_TZ(d.createdAt, '+00:00', '-04:00') AS newCreatedAt
                  FROM device_data d
                  JOIN device de ON d.iddevice = de.id
                  WHERE d.iddevice = ? `;
@@ -47,13 +47,6 @@ function getTotalDataTable(startDate, endDate, globalFilter) {
         queryR += ` WHERE CONVERT_TZ(de.createdAt, '+00:00', '-04:00') BETWEEN ? AND ?`;
         valuesR.push(startDate, endDate);
     } else if (startDate && endDate) {
-        const timeZoneOffset = -4 * 60; // -4 horas en minutos
-        startDate = new Date(startDate);
-        startDate.setMinutes(startDate.getMinutes() - timeZoneOffset);
-        startDate = startDate.toISOString();
-        endDate = new Date(endDate);
-        endDate.setMinutes(endDate.getMinutes() - timeZoneOffset);
-        endDate = endDate.toISOString();
         queryR += ` WHERE CONVERT_TZ(de.createdAt, '+00:00', '-04:00') BETWEEN ? AND ?`;
         valuesR.push(startDate, endDate);
     }
