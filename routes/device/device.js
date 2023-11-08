@@ -49,6 +49,7 @@ module.exports = (io) => {
     const { first, rows, globalFilter, sortField, sortOrder, startDate, endDate } = req.query;
     const startIndex = parseInt(first);
     const numRows = parseInt(rows);
+    console.log(req.query)
     try {
       const { query, values }  = await getDataTable(startIndex, numRows, globalFilter, sortField, sortOrder, startDate, endDate);
       const deviceData = await queryDatabase(query, values);
