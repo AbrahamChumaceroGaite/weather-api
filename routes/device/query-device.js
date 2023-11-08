@@ -15,7 +15,7 @@ function getDataLast(id) {
 }
 
 function getData(id, startDate, endDate) {
-    let query = `SELECT de.name, d.*, CONVERT_TZ(d.createdAt, '+00:00', '-04:00') AS newCreatedAt
+    let query = `SELECT de.name, d.*, DATE_FORMAT(CONVERT_TZ(d.createdAt, '+00:00', '-04:00'), '%Y-%m-%d %H:%i:%s') AS newCreatedAt
                  FROM device_data d
                  JOIN device de ON d.iddevice = de.id
                  WHERE d.iddevice = ? `;
@@ -44,10 +44,10 @@ function getTotalDataTable(startDate, endDate, globalFilter) {
         lastMonthDate.setMonth(lastMonthDate.getMonth() - 1);
         startDate = lastMonthDate.toISOString(); // O el formato que necesites
         endDate = new Date().toISOString();
-        queryR += ` WHERE CONVERT_TZ(de.createdAt, '+00:00', '-04:00') BETWEEN ? AND ?`;
+        queryR += ` WHERE DATE_FORMAT(CONVERT_TZ(de.createdAt, '+00:00', '-04:00'), '%Y-%m-%d %H:%i:%s') BETWEEN ? AND ?`;
         valuesR.push(startDate, endDate);
     } else if (startDate && endDate) {
-        queryR += ` WHERE CONVERT_TZ(de.createdAt, '+00:00', '-04:00') BETWEEN ? AND ?`;
+        queryR += ` WHERE DATE_FORMAT(CONVERT_TZ(de.createdAt, '+00:00', '-04:00'), '%Y-%m-%d %H:%i:%s') BETWEEN ? AND ?`;
         valuesR.push(startDate, endDate);
     }
 
@@ -58,7 +58,7 @@ function getTotalDataTable(startDate, endDate, globalFilter) {
 }
 
 function getDataTable(startIndex, numRows, globalFilter, sortField, sortOrder, startDate, endDate) {
-    let query = `SELECT d.name, d.status, de.*, CONVERT_TZ(de.createdAt, '+00:00', '-04:00') AS createdAt 
+    let query = `SELECT d.name, d.status, de.*, DATE_FORMAT(CONVERT_TZ(de.createdAt, '+00:00', '-04:00'), '%Y-%m-%d %H:%i:%s') AS createdAt 
       FROM device_data de
       JOIN device d ON de.iddevice = d.id `;
     const values = [];
@@ -73,10 +73,10 @@ function getDataTable(startIndex, numRows, globalFilter, sortField, sortOrder, s
         lastMonthDate.setMonth(lastMonthDate.getMonth() - 1);
         startDate = lastMonthDate.toISOString(); // O el formato que necesites
         endDate = new Date().toISOString();
-        query += ` AND CONVERT_TZ(de.createdAt, '+00:00', '-04:00') BETWEEN ? AND ?`;
+        query += ` AND DATE_FORMAT(CONVERT_TZ(de.createdAt, '+00:00', '-04:00'), '%Y-%m-%d %H:%i:%s') BETWEEN ? AND ?`;
         values.push(startDate, endDate);
     } else if (startDate && endDate) {
-        query += ` AND CONVERT_TZ(de.createdAt, '+00:00', '-04:00') BETWEEN ? AND ?`;
+        query += ` AND DATE_FORMAT(CONVERT_TZ(de.createdAt, '+00:00', '-04:00'), '%Y-%m-%d %H:%i:%s') BETWEEN ? AND ?`;
         values.push(startDate, endDate);
     }
 
