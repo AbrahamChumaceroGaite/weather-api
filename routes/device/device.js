@@ -4,7 +4,7 @@ const verifyToken = require('../../middleware/middleware');
 const { queryDatabase } = require("../../services/db/query");
 const msj = require("../../templates/messages");
 const { getData, getDataLast, getDeviceIdLocation, insertDeviceData, deleteDevice, getDataTable, getTotalDataTable } = require("./query-device");
-const { checkExistingIdentity, getDevicesIdentity, getLazy, getTotalRecords, getDeviceIdentityById, getUnusedDeviceIdentities, insertDeviceIdentity, updateDeviceIdentity, deleteDeviceIdentity } = require("./query-identity");
+const { checkExistingIdentity, checkExistingIdentityUpdate, getDevicesIdentity, getLazy, getTotalRecords, getDeviceIdentityById, getUnusedDeviceIdentities, insertDeviceIdentity, updateDeviceIdentity, deleteDeviceIdentity } = require("./query-identity");
 const { GetUserNameAutor, GetMessageFromCode, GetSuscribersUserAdmin, GetUsersAdmin, InsertUserReport } = require('../../services/web_push/shared-querys');
 const { newDeviceUser } = require('../../templates/payload');
 const { PushNotification } = require('../../services/web_push/push-notification');
@@ -52,7 +52,7 @@ module.exports = (io) => {
     try {
       const { query, values }  = await getDataTable(startIndex, numRows, globalFilter, sortField, sortOrder, startDate, endDate);
       const deviceData = await queryDatabase(query, values);
-      const { queryR, valuesR } = await getTotalDataTable(startDate, endDate)
+      const { queryR, valuesR } = await getTotalDataTable(startDate, endDate, globalFilter)
       const totalR = await queryDatabase(queryR, valuesR);
       const total = totalR[0].totalRecords;
 
@@ -261,11 +261,10 @@ module.exports = (io) => {
     const id = req.params.id;
     const { idlocation, name, status, idautor } = req.body;
 
-    console.log(req.body)
     try {
-      const { queryCheck, valueCheck } = await checkExistingIdentity(name)
+      const { queryCheck, valueCheck } = await checkExistingIdentityUpdate(name, id)
       const existingDevice = await queryDatabase(queryCheck, valueCheck);
-
+      console.log(existingDevice)
       if (existingDevice.length > 0) {
         res.status(400).send({ message: msj.duplicatedDevice });
       } else {

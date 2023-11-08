@@ -59,6 +59,21 @@ function checkExistingIdentity(name) {
   };
 }
 
+function checkExistingIdentityUpdate(name, id = null) {
+  let queryCheck = "SELECT * FROM device WHERE name = ? ";
+  const valueCheck = [name];
+
+  if (id !== null) {
+    queryCheck += " AND id <> ?";
+    valueCheck.push(id);
+  }
+
+  return {
+    queryCheck,
+    valueCheck,
+  };
+}
+
 function insertDeviceIdentity(name, idlocation, status, idautor) {
   return {
     query: `INSERT INTO device (name, idlocation, status, idautor) VALUES (?, ?, ?, ?)`,
@@ -110,6 +125,7 @@ function deleteDeviceIdentity(id) {
 
 module.exports = {
   checkExistingIdentity,
+  checkExistingIdentityUpdate,
   getDevicesIdentity,
   getTotalRecords,
   getLazy,
