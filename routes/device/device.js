@@ -49,7 +49,6 @@ module.exports = (io) => {
     const { first, rows, globalFilter, sortField, sortOrder, startDate, endDate } = req.query;
     const startIndex = parseInt(first);
     const numRows = parseInt(rows);
-    console.log(req.query)
     try {
       const { query, values }  = await getDataTable(startIndex, numRows, globalFilter, sortField, sortOrder, startDate, endDate);
       const deviceData = await queryDatabase(query, values);
@@ -71,7 +70,7 @@ module.exports = (io) => {
   router.post("/post/data", async (req, res) => {
     try {
       const data = req.body;
-     
+      console.log(data)
       const { iddevice } = data;
       const { querylocation, valueslocation } = await getDeviceIdLocation(iddevice);
       const resultL = await queryDatabase(querylocation, valueslocation);
