@@ -28,6 +28,8 @@ app.get("/weather/api/test", (req, res) => {
 app.use('/weather/api/device', deviceRouter);
 app.use('/weather/api/login', routes.login);
 
+
+app.use('/weather/api/category', verifyToken, routes.category);
 app.use('/weather/api/department', verifyToken, routes.department);
 app.use('/weather/api/province', verifyToken, routes.province);
 app.use('/weather/api/municipality', verifyToken, routes.municipality);
@@ -37,6 +39,7 @@ app.use('/weather/api/location', verifyToken, routes.locations);
 app.use('/weather/api/device/client', verifyToken, deviceClientRouter);
 app.use('/weather/api/client', verifyToken, routes.client);
 app.use('/weather/api/person', verifyToken, routes.person);
+app.use('/weather/api/product', verifyToken, routes.product);
 app.use('/weather/api/rol', verifyToken, routes.rol);
 app.use('/weather/api/user', verifyToken, routes.user);
 

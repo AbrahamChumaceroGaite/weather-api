@@ -8,11 +8,14 @@ const notification = require('../routes/notifications/notifications')
 const locations = require('../routes/location/location');
 const client = require('../routes/client/client');
 const person = require('../routes/person/person');
+const product = require('../routes/product/product');
+const category = require('../routes/category/category');
 const rol = require('../routes/rol/rol');
 const user = require('../routes/user/users');
 const login = require('../routes/login/login');
 
 module.exports = {
+    category,
     device,
     deviceclient,
     department,
@@ -23,6 +26,7 @@ module.exports = {
     locations,
     client,
     person,
+    product,
     rol,
     user,
     login
