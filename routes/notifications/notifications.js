@@ -26,7 +26,7 @@ module.exports = (io) => {
       const exists = await queryDatabase(queryCheck, valuesCheck)
 
       if (exists.length > 0) {
-        res.json({ mensaje: "La suscripción ya existe." });
+        res.json({ message: "La suscripción ya existe." });
       } else {
         const { querySubs, valuesSubs } = await susbcribeUser(id, endpoint, p256dh, auth);
         const result = await queryDatabase(querySubs, valuesSubs);
@@ -134,7 +134,7 @@ module.exports = (io) => {
       });
     } catch (err) {
       console.log(err);
-      res.status(500).json({ mensaje: messages.errorquery });
+      res.status(500).json({ message: messages.errorquery });
     }
   });
 

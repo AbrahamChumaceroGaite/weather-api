@@ -25,14 +25,14 @@ router.post('/', async (req, res) => {
                   rol: user.rol,
               });
           } else {
-              res.status(500).json({ mensaje: msj.loginError });
+              res.status(500).json({ message: msj.loginError });
           }
       } else {
-          res.status(500).json({ mensaje: msj.loginNoUser });
+          res.status(500).json({ message: msj.loginNoUser });
       }
   } catch (error) {
       console.log(error);
-      res.status(500).json({ mensaje: msj.errorQuery });
+      res.status(500).json({ message: msj.errorQuery });
   }
 });
 

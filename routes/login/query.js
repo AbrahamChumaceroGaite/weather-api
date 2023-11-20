@@ -17,7 +17,7 @@ function getUser(ci) {
 
 function generateAuthToken(user) {
     const payload = {
-        name: user.nombre,
+        name: user.name,
         userId: user.id
     };
 

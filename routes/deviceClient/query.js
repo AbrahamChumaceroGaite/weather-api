@@ -1,6 +1,6 @@
 function getDeviceClients() {
     return `
-    SELECT c.id, p.name AS "client", dc.createdAt, dc.createdUpd
+    SELECT c.id, p.name AS "client", dc.createdAt, dc.createUpd
     FROM device_client dc
     JOIN client c ON dc.idclient = c.id
     JOIN person p ON c.idperson = p.id`;
@@ -8,7 +8,7 @@ function getDeviceClients() {
 
 function getDeviceClientById(id) {
     return {
-        query: `SELECT dc.id, c.id AS "idclient", p.name AS "client", dc.createdAt, dc.createdUpd
+        query: `SELECT dc.id, c.id AS "idclient", p.name AS "client", dc.createdAt, dc.createUpd
         FROM device_client dc
         JOIN device d ON dc.idevice = d.id
         JOIN client c ON dc.idclient = c.id

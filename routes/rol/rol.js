@@ -56,7 +56,7 @@ router.delete("/delete/:id", async (req, res) => {
 
   try {
     const deleteQuery = deleteRole(id);
-    const result = await queryDatabase(deleteQuery.query, deleteQuery.value);
+    const result = await queryDatabase(deleteQuery.query, deleteQuery.values);
 
     if (result.affectedRows === 0) {
       res.status(404).send({ message: msj.notFound });

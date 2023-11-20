@@ -1,5 +1,5 @@
 function getRoles() {
-    return "SELECT * FROM rol";
+    return "SELECT * FROM rol WHERE deleted = 0";
 }
 
 function postRole(rol, idautor) {
