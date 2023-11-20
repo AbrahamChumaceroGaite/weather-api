@@ -36,7 +36,7 @@ router.get("/getLazy", async (req, res) => {
 });
 
 router.get("/getById/:id", async (req, res) => {
-  const id = req.params.id;
+  const id = req.query.id;
   try {
     const results = await queryDatabase(getClientById(id))
     res.send(results);

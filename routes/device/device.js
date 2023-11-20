@@ -4,7 +4,7 @@ const verifyToken = require('../../middleware/middleware');
 const { queryDatabase } = require("../../services/db/query");
 const msj = require("../../templates/messages");
 const { getData, getDataLast, getDeviceIdLocation, insertDeviceData, deleteDevice, getDataTable, getTotalDataTable, getDataByDevice, calculateHours } = require("./query-device");
-const { checkExistingIdentity, checkExistingIdentityUpdate, getDevicesIdentity, getLazy, getTotalRecords, getDeviceIdentityById, getUnusedDeviceIdentities, insertDeviceIdentity, updateDeviceIdentity, deleteDeviceIdentity } = require("./query-identity");
+const { checkExistingIdentity, checkExistingIdentityUpdate, getDevicesIdentity, getLazy, getTotalRecords, getDeviceIdentityById, getUnusedDeviceIdentities, insertDeviceIdentity, updateDeviceIdentity, deleteDeviceIdentity, getDevicesIdentityByClient } = require("./query-identity");
 const { GetUserNameAutor, GetMessageFromCode, GetSuscribersUserAdmin, GetUsersAdmin, InsertUserReport } = require('../../services/web_push/shared-querys');
 const { newDeviceUser } = require('../../templates/payload');
 const { PushNotification } = require('../../services/web_push/push-notification');
@@ -146,6 +146,23 @@ module.exports = (io) => {
     try {
       const query = await getDevicesIdentity();
       const results = await queryDatabase(query);
+
+      if (results.length === 0) {
+        res.status(404).send({ message: msj.notFound });
+      } else {
+        res.send(results);
+      }
+    } catch (err) {
+      console.log(err)
+      res.status(500).send({ message: msj.errorQuery });
+    }
+  });
+
+  router.get("/get/identity/ByClient/", verifyToken, async (req, res) => {
+    const id = req.query.id;
+    try {
+      const query = await getDevicesIdentityByClient(id);
+      const results = await queryDatabase(query.queryClient, query.valueClient);
 
       if (results.length === 0) {
         res.status(404).send({ message: msj.notFound });

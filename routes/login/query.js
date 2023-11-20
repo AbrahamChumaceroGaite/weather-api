@@ -15,6 +15,14 @@ function getUser(ci) {
     };
 }
 
+function getClient(ci) {
+    return {
+        query: `SELECT c.id, CONCAT_WS(' ', p.name, p.lastname) as name, p.ci FROM client c
+        JOIN person p ON c.idperson = p.id WHERE p.ci = ?`,
+        value: [ci]
+    };
+}
+
 function generateAuthToken(user) {
     const payload = {
         name: user.name,
@@ -33,6 +41,7 @@ function generateAuthToken(user) {
 
 module.exports = {
     getUser,
+    getClient,
     comparePassword,
     generateAuthToken
 };

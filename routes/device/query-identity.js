@@ -9,6 +9,12 @@ function getDevicesIdentity() {
   return `SELECT de.id, de.name FROM device de WHERE de.deleted = 0 AND de.status = 1`
 }
 
+function getDevicesIdentityByClient(id) {
+  queryClient = `SELECT d.id, d.name FROM device d JOIN device_client dc ON d.id = dc.idevice WHERE dc.idclient = ?`
+  valueClient = [id] 
+  return {queryClient, valueClient}
+}
+
 function getTotalRecords() {
   return `SELECT COUNT(*) as totalRecords FROM device de
   LEFT JOIN device_client dc ON de.id = dc.idevice
@@ -22,7 +28,7 @@ function getTotalRecords() {
 }
 
 function getLazy(startIndex, numRows, globalFilter, sortField, sortOrder) {
-  let query = `SELECT de.id, de.name as "code", COALESCE( CONCAT_WS(' ', pe.name, pe.lastname), 'Vacio') AS "client", COALESCE(pe.ci, 'Vacio') AS "ci", d.name AS "department", c.name AS "community", l.name AS "location", de.status, de.createdAt, de.createdUpd FROM device de
+  let query = `SELECT de.id, de.name as "code", cl.id as idclient, COALESCE( CONCAT_WS(' ', pe.name, pe.lastname), 'Vacio') AS "client", COALESCE(pe.ci, 'Vacio') AS "ci", d.name AS "department", c.name AS "community", l.name AS "location", de.status, de.createdAt, de.createdUpd FROM device de
   LEFT JOIN device_client dc ON de.id = dc.idevice
   LEFT JOIN client cl ON dc.idclient = cl.id
   LEFT JOIN person pe ON cl.idperson = pe.id
@@ -129,6 +135,7 @@ module.exports = {
   getDevicesIdentity,
   getTotalRecords,
   getLazy,
+  getDevicesIdentityByClient,
   getUnusedDeviceIdentities,
   getDeviceIdentityById,
   insertDeviceIdentity,
