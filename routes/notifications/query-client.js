@@ -4,6 +4,13 @@ function susbcribeClient(id, endpoint, p256dh, auth) {
     return { querySubs, valuesSubs }
 }
 
+
+function getSubscriptionClient(id) {
+    const queryGetSubs = 'SELECT endpoint, p256dh, auth FROM subscribers_clients WHERE id = ?'
+    const valuesGetSubs = [id]
+    return { queryGetSubs, valuesGetSubs }
+}
+
 function checkIfExistsClient(id, endpoint, p256dh, auth) {
     // Realiza una consulta para verificar si ya existe un registro con los mismos valores
     const queryCheck = 'SELECT * FROM susbcribers_clients WHERE idclient = ? AND endpoint = ? AND p256dh = ? AND auth = ?';
@@ -45,6 +52,7 @@ function readNotificationClient(id) {
 
 module.exports = {
     susbcribeClient,
+    getSubscriptionClient,
     checkIfExistsClient,
     getNotificacionsClient,
     getCountNotificacionsClient,

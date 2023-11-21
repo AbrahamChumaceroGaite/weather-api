@@ -2,7 +2,7 @@ const express = require('express');
 const router = express();
 const msj = require('../../templates/messages');
 const { susbcribeUser, isAdmin, checkIfExistsUser, insertReport, getSubscriptionUser, getNotificationCode, getNotificacionsUser, getCountNotificacionsUser, getReport, readNotificationUser, MainDashboardUser } = require('./query-user');
-const { susbcribeClient, checkIfExistsClient, getNotificacionsClient, getCountNotificacionsClient, readNotificationClient } = require('./query-client');
+const { susbcribeClient, checkIfExistsClient, getSubscriptionClient, getNotificacionsClient, getCountNotificacionsClient, readNotificationClient } = require('./query-client');
 const { queryDatabase } = require('../../services/db/query')
 const verifyToken = require('../../middleware/middleware');
 const { PushNotification } = require('../../services/web_push/push-notification');
@@ -12,6 +12,94 @@ const { welcomePayloadUser } = require('../../templates/payload');
 module.exports = (io) => {
   router.post('/testing', async (req, res) => {
     io.to(nameRoom).emit('notification', '');
+  });
+
+  router.post('/register/subscription/user', verifyToken, async (req, res) => {
+    const id = req.body.id;
+    const endpoint = req.body.body.endpoint;
+    const p256dh = req.body.body.keys.p256dh;
+    const auth = req.body.body.keys.auth;
+
+    try {
+
+      const { queryCheck, valuesCheck } = await checkIfExistsUser(id, endpoint, p256dh, auth);
+      const exists = await queryDatabase(queryCheck, valuesCheck)
+
+      if (exists.length > 0) {
+        res.json({ message: "La suscripción ya existe." });
+      } else {
+        const { querySubs, valuesSubs } = await susbcribeUser(id, endpoint, p256dh, auth);
+        const result = await queryDatabase(querySubs, valuesSubs);
+        const idnewsubscription = result.insertId;
+
+        if (result.affectedRows === 1) {
+
+          const { queryGetSubs, valuesGetSubs } = await getSubscriptionUser(idnewsubscription);
+          const resultsGetUser = await queryDatabase(queryGetSubs, valuesGetSubs);
+          const code = 2033;
+          const { queryGetMsg, valuesGetMsg } = await getNotificationCode(code);
+          const resultsGetMsg = await queryDatabase(queryGetMsg, valuesGetMsg);
+          const content = resultsGetMsg[0].message;
+          const codemsj = 11
+          const payload = await welcomePayloadUser(content);
+          const insertReportUser = await insertReport(id, codemsj, payload.notification.body);
+          const resultInsertReport = await queryDatabase(insertReportUser.queryInsert, insertReportUser.valuesInsert);
+
+          if (resultInsertReport.affectedRows === 1) {
+            io.emit('notification', '');
+            await PushNotification(resultsGetUser[0], payload);
+          }         
+          res.status(201).send({ message: msj.successPost });
+        } else {
+          console.log("Error al insertar la suscripción");
+        }
+      }
+    } catch (err) {
+      console.log(err)
+      res.status(500).send({ message: msj.errorQuery });
+    }
+  });
+
+   router.post('/register/subscription/client', verifyToken, async (req, res) => {
+    const id = req.body.id;
+    const endpoint = req.body.body.endpoint;
+    const p256dh = req.body.body.keys.p256dh;
+    const auth = req.body.body.keys.auth;
+
+    try {
+
+      const { queryCheck, valuesCheck } = await checkIfExistsClient(id, endpoint, p256dh, auth);
+      const exists = await queryDatabase(queryCheck, valuesCheck)
+
+      if (exists.length > 0) {
+        res.json({ message: "La suscripción ya existe." });
+      } else {
+        const { querySubs, valuesSubs } = await susbcribeClient(id, endpoint, p256dh, auth);
+        const result = await queryDatabase(querySubs, valuesSubs);
+        const idnewsubscription = result.insertId;
+
+        if (result.affectedRows === 1) {
+
+          const { queryGetSubs, valuesGetSubs } = await getSubscriptionClient(idnewsubscription);
+          const resultsGetUser = await queryDatabase(queryGetSubs, valuesGetSubs);
+          const code = 2033;
+          const { queryGetMsg, valuesGetMsg } = await getNotificationCode(code);
+          const resultsGetMsg = await queryDatabase(queryGetMsg, valuesGetMsg);
+          const content = resultsGetMsg[0].message;
+          const payload = await welcomePayloadUser(content);
+          if (resultInsertReport.affectedRows === 1) {
+            io.emit('notification', '');
+            await PushNotification(resultsGetUser[0], payload);
+          }         
+          res.status(201).send({ message: msj.successPost });
+        } else {
+          console.log("Error al insertar la suscripción");
+        }
+      }
+    } catch (err) {
+      console.log(err)
+      res.status(500).send({ message: msj.errorQuery });
+    }
   });
 
   router.post('/register/subscription/user', verifyToken, async (req, res) => {
