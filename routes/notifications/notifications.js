@@ -87,10 +87,8 @@ module.exports = (io) => {
           const resultsGetMsg = await queryDatabase(queryGetMsg, valuesGetMsg);
           const content = resultsGetMsg[0].message;
           const payload = await welcomePayloadUser(content);
-          if (resultInsertReport.affectedRows === 1) {
-            io.emit('notification', '');
-            await PushNotification(resultsGetUser[0], payload);
-          }         
+          io.emit('notification', '');
+          await PushNotification(resultsGetUser[0], payload);      
           res.status(201).send({ message: msj.successPost });
         } else {
           console.log("Error al insertar la suscripción");
