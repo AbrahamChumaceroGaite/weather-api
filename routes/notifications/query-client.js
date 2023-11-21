@@ -1,5 +1,5 @@
 function susbcribeClient(id, endpoint, p256dh, auth) {
-    const querySubs = 'INSERT INTO susbcribers_clients (idclient, endpoint, p256dh, auth) VALUES (?,?,?,?)'
+    const querySubs = 'INSERT INTO subscribers_clients (idclient, endpoint, p256dh, auth) VALUES (?,?,?,?)'
     const valuesSubs = [id, endpoint, p256dh, auth]
     return { querySubs, valuesSubs }
 }
@@ -13,7 +13,7 @@ function getSubscriptionClient(id) {
 
 function checkIfExistsClient(id, endpoint, p256dh, auth) {
     // Realiza una consulta para verificar si ya existe un registro con los mismos valores
-    const queryCheck = 'SELECT * FROM susbcribers_clients WHERE idclient = ? AND endpoint = ? AND p256dh = ? AND auth = ?';
+    const queryCheck = 'SELECT * FROM subscribers_clients WHERE idclient = ? AND endpoint = ? AND p256dh = ? AND auth = ?';
     const valuesCheck = [id, endpoint, p256dh, auth];
     return { queryCheck, valuesCheck }
 }
