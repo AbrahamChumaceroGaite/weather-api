@@ -6,5 +6,8 @@ WORKDIR /app/
 COPY package.json package-lock.json ./
 
 RUN npm install
+
+RUN npm install pm2 -g
+
 COPY . .
-CMD ["npm", "run", "start"]
+CMD ["pm2-runtime", "app.js"]
