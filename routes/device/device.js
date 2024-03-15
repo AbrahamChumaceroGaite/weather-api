@@ -83,7 +83,8 @@ module.exports = (io) => {
         const idlocation = resultL[0].idlocation;
         const { query, values } = insertDeviceData(idlocation, data);
         const result = await queryDatabase(query, values);
-
+        console.log(query)
+        
         if (result.affectedRows === 1) {
           io.emit('devicedata', '');
           res.status(200).send({ message: msj.successPost });
