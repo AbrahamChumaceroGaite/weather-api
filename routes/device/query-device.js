@@ -111,7 +111,7 @@ function getDataTable(startIndex, numRows, globalFilter, sortField, sortOrder, s
 
 function getDeviceIdLocation(id) {
   return {
-    querylocation: `SELECT idlocation FROM device WHERE id = ?`,
+    querylocation: `SELECT idlocation FROM device WHERE name = ?`,
     valueslocation: [id],
   }
 }
