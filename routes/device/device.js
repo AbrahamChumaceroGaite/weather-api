@@ -77,13 +77,14 @@ module.exports = (io) => {
       const { iddevice } = data;
       const { querylocation, valueslocation } = await getDeviceIdLocation(iddevice);
       const resultL = await queryDatabase(querylocation, valueslocation);
+      console.log(resultL)
       if (resultL.length === 0) {
         res.status(404).send({ message: msj.notFound });
       } else {
         const idlocation = resultL[0].idlocation;
         const { query, values } = insertDeviceData(idlocation, data);
         const result = await queryDatabase(query, values);
-        console.log(query)
+        console.log(result)
         
         if (result.affectedRows === 1) {
           io.emit('devicedata', '');
