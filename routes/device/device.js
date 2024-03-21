@@ -75,6 +75,7 @@ module.exports = (io) => {
       const data = req.body;
       console.log(data)
       const { iddevice } = data;
+      console.log(iddevice);
       const { querylocation, valueslocation } = await getDeviceIdLocation(iddevice);
       const resultL = await queryDatabase(querylocation, valueslocation);
       console.log(resultL)
