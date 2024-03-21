@@ -73,8 +73,7 @@ module.exports = (io) => {
   router.post("/post/data", async (req, res) => {
     try {
       const data = req.body;
-      console.log("Datos ": data)
-      const { iddevice } = req.body;
+      console.log("Datos: ", req.body);
       console.log("ID Dispositivo: ", iddevice);
       const { querylocation, valueslocation } = await getDeviceIdLocation(iddevice);
       const resultL = await queryDatabase(querylocation, valueslocation);
