@@ -73,19 +73,20 @@ module.exports = (io) => {
   router.post("/post/data", async (req, res) => {
     try {
       const data = req.body;
+      const iddevice = 1
       console.log(data)
       const { iddevice } = data;
-      console.log(iddevice);
+      console.log("Datos: ", iddevice);
       const { querylocation, valueslocation } = await getDeviceIdLocation(iddevice);
       const resultL = await queryDatabase(querylocation, valueslocation);
-      console.log(resultL)
+      console.log("QueryLocacion: ", resultL)
       if (resultL.length === 0) {
         res.status(404).send({ message: msj.notFound });
       } else {
         const idlocation = resultL[0].idlocation;
         const { query, values } = insertDeviceData(idlocation, data);
         const result = await queryDatabase(query, values);
-        console.log(result)
+        console.log("Insertar: ", result)
         
         if (result.affectedRows === 1) {
           io.emit('devicedata', '');
