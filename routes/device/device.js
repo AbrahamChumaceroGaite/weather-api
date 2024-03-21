@@ -83,7 +83,8 @@ module.exports = (io) => {
         res.status(404).send({ message: msj.notFound });
       } else {
         const idlocation = resultL[0].idlocation;
-        const { query, values } = insertDeviceData(idlocation, data);
+        const id = resultL[0].id;
+        const { query, values } = insertDeviceData(id, idlocation, data);
         const result = await queryDatabase(query, values);
         console.log("Insertar: ", result)
         
