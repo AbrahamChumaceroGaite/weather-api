@@ -73,12 +73,11 @@ module.exports = (io) => {
   router.post("/post/data", async (req, res) => {
     try {
       const data = req.body;
-      console.log("Datos: ", req.body);
+      console.log("Datos HTTP: ", req.body);
+      console.log("IP DE ORIGEN: ", req.ip)
       const {iddevice} = req.body;
-      console.log("ID Dispositivo: ", iddevice);
       const { querylocation, valueslocation } = await getDeviceIdLocation(iddevice);
       const resultL = await queryDatabase(querylocation, valueslocation);
-      console.log("QueryLocacion: ", resultL)
       if (resultL.length === 0) {
         res.status(404).send({ message: msj.notFound });
       } else {
