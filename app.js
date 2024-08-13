@@ -14,6 +14,7 @@ const routes = require('./utils/routes');
 const notificationRouter = require('./routes/notifications/notifications')(io);
 const deviceClientRouter = require('./routes/deviceClient/deviceclient')(io);
 const deviceRouter = require('./routes/device/device')(io);
+app.set('trust proxy', true);
 
 // Parsear el contenido enviado
 app.use(cors());
