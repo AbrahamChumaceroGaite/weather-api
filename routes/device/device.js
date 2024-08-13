@@ -73,7 +73,6 @@ module.exports = (io) => {
   router.post("/post/data", async (req, res) => {
     try {
       const data = req.body;
-      console.log("Datos HTTP: ", req.body);
       console.log("IP DE ORIGEN: ", req.ip)
       const {iddevice} = req.body;
       const { querylocation, valueslocation } = await getDeviceIdLocation(iddevice);
@@ -85,8 +84,7 @@ module.exports = (io) => {
         const id = resultL[0].id;
         const { query, values } = insertDeviceData(id, idlocation, data);
         const result = await queryDatabase(query, values);
-        console.log("Insertar: ", result)
-        
+       
         if (result.affectedRows === 1) {
           io.emit('devicedata', '');
           res.status(200).send({ message: msj.successPost });
