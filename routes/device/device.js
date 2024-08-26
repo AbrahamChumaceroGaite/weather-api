@@ -71,9 +71,9 @@ module.exports = (io) => {
   });
 
   router.post("/post/data", async (req, res) => {
+    console.log("IP DE ORIGEN: ", req.ip)
     try {
-      const data = req.body;
-      console.log("IP DE ORIGEN: ", req.ip)
+      const data = req.body;    
       const {iddevice} = req.body;
       const { querylocation, valueslocation } = await getDeviceIdLocation(iddevice);
       const resultL = await queryDatabase(querylocation, valueslocation);
