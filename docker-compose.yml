@@ -3,8 +3,8 @@ services:
   backend:
     build: .
     environment:
-      NODE_ENV: development
+      NODE_ENV: production
       DEBUG: nodejs-docker-express:*
     ports:
-      - "4040:80"
+      - "40402:80"
     restart: always  
