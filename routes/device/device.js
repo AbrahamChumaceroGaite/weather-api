@@ -94,7 +94,7 @@ module.exports = (io) => {
       }
 
     } catch (err) {
-      console.log(err)
+      console.log("ERROR AL INSERTAR DATOS: ", err)
       res.status(500).send({ message: msj.errorQuery });
     }
   });
